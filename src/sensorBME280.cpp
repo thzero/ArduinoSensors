@@ -10,10 +10,9 @@
 sensorBME280::sensorBME280() {
 }
 
-atmosphereValues sensorBME280::initializeSensors() {
-  atmosphereValues values;
+sensorValuesStruct sensorBME280::initialize() {
+  sensorValuesStruct values;
 
-  Serial.println(F("\tinitialize sensors..."));
   float resultHumidity = 0;
   float resultPressure = 0;
   float resultTemperature = 0;
@@ -23,7 +22,7 @@ atmosphereValues sensorBME280::initializeSensors() {
   float sumTemperature = 0;
   for (int i = 0; i < samples; i++) {
     // debug(F("i"), i);
-    atmosphereValues values2 = readSensor();
+    atmosphereValues values2 = readAtmosphere();
     resultHumidity = values2.humidity;
     resultPressure = values2.pressure;
     resultTemperature = values2.temperature;
@@ -38,9 +37,9 @@ atmosphereValues sensorBME280::initializeSensors() {
     // debug(F("sumTemperature"), sumTemperature);
     delay(50);
   }
-  // values.humidity = (sumHumidity / samples);
-  values.pressure = (sumPressure / samples);
-  values.temperature = (sumTemperature / samples);
+  values.atmosphere.humidity = (sumHumidity / samples);
+  values.atmosphere.pressure = (sumPressure / samples);
+  values.atmosphere.temperature = (sumTemperature / samples);
   // debug(F("atmosphereValues.humidity"), values.humidity);
   // debug(F("atmosphereValues.pressure"), values.pressure);
   // debug(F("temperatureOutdoor"), values.temperature);
@@ -49,7 +48,7 @@ atmosphereValues sensorBME280::initializeSensors() {
   float sum = 0;
   for (int i = 0; i < samples; i++) {
     // debug(F("i"), i);
-    result = readSensorAltitude();
+    result = readAltitude();
     // debug(F("result"), result);
     sum += result;
     // debug(F("sum"), sum);
@@ -57,13 +56,12 @@ atmosphereValues sensorBME280::initializeSensors() {
   }
   float altitudeInitial = (sum / samples);
   // debug(F("altitudeInitial"), altitudeInitial);
-  values.altitude = altitudeInitial;
+  values.atmosphere.altitude = altitudeInitial;
 
-  Serial.println(F("\t...initialize sensors"));
   return values;
 }
 
-atmosphereValues sensorBME280::readSensor() {
+atmosphereValues sensorBME280::readAtmosphere() {
   atmosphereValues values;
 
   uint32_t humidity = 0;
@@ -120,8 +118,8 @@ atmosphereValues sensorBME280::readSensor() {
 #if defined(DEBUG_SENSOR)
   Serial.print(F("pressure (reference)="));
   Serial.print(pressureReference);
-  // Serial.print(F("humidity="));
-  // Serial.print(humidity);
+  Serial.print(F("humidity="));
+  Serial.print(humidity);
   Serial.print(F("\tpressure="));
   Serial.print(pressure);
   Serial.print(F("\ttemperature="));
@@ -131,12 +129,12 @@ atmosphereValues sensorBME280::readSensor() {
   return values;
 }
 
-float sensorBME280::readSensorAltitude() {
-  atmosphereValues values = readSensor();
-  return readSensorAltitude(values);
+float sensorBME280::readAltitude() {
+  atmosphereValues values = readAtmosphere();
+  return readAltitude(values);
 }
 
-float sensorBME280::readSensorAltitude(atmosphereValues values) {
+float sensorBME280::readAltitude(atmosphereValues values) {
   float pressure = values.pressure * 100;
 
   // float altitude = _sensor.calAltitude(pressure, pressureReference);
@@ -181,13 +179,13 @@ float sensorBME280::readSensorAltitude(atmosphereValues values) {
   return values.altitude;
 }
 
-void sensorBME280::sleepSensors() {
+void sensorBME280::sleep() {
   Serial.println(F("\tSleep sensor atmosphere..."));
 
   Serial.println(F("\t...sensor atmosphere sleep successful."));
 }
 
-void sensorBME280::setupSensors() {
+void sensorBME280::setup() {
   Serial.println(F("\tSetup sensor atmosphere..."));
 
   bool results = _sensor.begin(BME_ADDR, // returns a T/F based on initialization.
@@ -215,7 +213,7 @@ void sensorBME280::setupSensors() {
 // // //   Serial.print(F("Reading atmosphere...");
 // // //   Serial.println(i);
 // // // #endif
-// // //   readSensor();
+// // //   readAtmosphere();
 // //   }
 // // #endif
 

@@ -4,19 +4,19 @@
 #include <BME280_LITE.h>
 
 // #include "kalman.h"
+#include "sensorBase.h"
 #include "sensorData.h"
 
-class sensorBME280 {
+class sensorBME280: public sensorBase {
   public:
     sensorBME280();
     // void init(BME280I2C bme);
-    atmosphereValues initializeSensors();
-    void initSensors();
-    atmosphereValues readSensor();
-    float readSensorAltitude();
-    float readSensorAltitude(atmosphereValues values);
-    void sleepSensors();
-    void setupSensors();
+    sensorValuesStruct initialize() override;
+    atmosphereValues readAtmosphere() override;
+    float readAltitude() override;
+    float readAltitude(atmosphereValues values) override;
+    void sleep() override;
+    void setup() override;
     
   private:
     BME280_LITE _sensor;
