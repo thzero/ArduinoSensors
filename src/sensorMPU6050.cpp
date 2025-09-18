@@ -199,15 +199,14 @@ void sensorMPU6050::calibrationDisplay(calData calibrationData, const char* offs
   Serial.println(F("IMU Bias"));
 
   Serial.print(offset);
-  Serial.print(F("Accel biases X/Y/Z: "));
+  Serial.print(F("\tAccel biases X/Y/Z: "));
   Serial.print(calibrationData.accelBias[0]);
   Serial.print(F(", "));
   Serial.print(calibrationData.accelBias[1]);
   Serial.print(F(", "));
-  Serial.print(offset);
   Serial.println(calibrationData.accelBias[2]);
   Serial.print(offset);
-  Serial.print(F("Gyro biases X/Y/Z: "));
+  Serial.print(F("\tGyro biases X/Y/Z: "));
   Serial.print(calibrationData.gyroBias[0]);
   Serial.print(F(", "));
   Serial.print(calibrationData.gyroBias[1]);
@@ -216,14 +215,14 @@ void sensorMPU6050::calibrationDisplay(calData calibrationData, const char* offs
   // debug(F("hasMagnetometer"), _imu.hasMagnetometer());
   if (_imu.hasMagnetometer()) {
     Serial.print(offset);
-    Serial.print(F("Mag biases X/Y/Z: "));
+    Serial.print(F("\tMag biases X/Y/Z: "));
     Serial.print(calibrationData.magBias[0]);
     Serial.print(F(", "));
     Serial.print(calibrationData.magBias[1]);
     Serial.print(F(", "));
     Serial.println(calibrationData.magBias[2]);
     Serial.print(offset);
-    Serial.print(F("Mag Scale X/Y/Z: "));
+    Serial.print(F("\tMag Scale X/Y/Z: "));
     Serial.print(calibrationData.magScale[0]);
     Serial.print(F(", "));
     Serial.print(calibrationData.magScale[1]);
