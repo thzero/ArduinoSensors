@@ -6,7 +6,7 @@
 class sensorBase {
   public:
     virtual void calibrationResetCommand();
-    virtual sensorValuesStruct initialize();
+    virtual sensorValuesStruct initialize(); // TODO: this would be good as a generic...
     virtual accelerometerValues readAccelerometer();
     virtual float readAltitude();
     virtual float readAltitude(atmosphereValues values);
