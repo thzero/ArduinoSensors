@@ -17,7 +17,14 @@
 sensorMPU6050::sensorMPU6050() {
 }
 
-accelerometerValues sensorMPU6050::readSensorAccelerometer() {
+sensorValuesStruct sensorMPU6050::initialize() {
+  sensorValuesStruct values;
+  values.acceleration = readAccelerometer();
+  values.gyroscope = readGyroscope();
+  return values;
+}
+
+accelerometerValues sensorMPU6050::readAccelerometer() {
   accelerometerValues values;
 
   AccelData imuAccel; 
@@ -68,7 +75,7 @@ accelerometerValues sensorMPU6050::readSensorAccelerometer() {
     return values;
 }
 
-gyroscopeValues sensorMPU6050::readSensorGyroscope() {
+gyroscopeValues sensorMPU6050::readGyroscope() {
   gyroscopeValues values;
 
   GyroData imuGyro;
@@ -120,7 +127,7 @@ gyroscopeValues sensorMPU6050::readSensorGyroscope() {
     return values;
 }
 
-void sensorMPU6050::sleepSensors() {
+void sensorMPU6050::sleep() {
   Serial.println(F("\tSleep sensor IMU..."));
   
   // _qmi.disableGyroscope();
@@ -129,7 +136,7 @@ void sensorMPU6050::sleepSensors() {
   Serial.println(F("\t...sensor IMU sleep successful."));
 }
 
-void sensorMPU6050::setupSensors() {
+void sensorMPU6050::setup() {
   Serial.println(F("\tSetup sensor IMU..."));
   
   _imu.setIMUGeometry(IMU_GEOMETRY);
@@ -140,7 +147,7 @@ void sensorMPU6050::setupSensors() {
   if (calibrationDataStatus == IMU_EEPROM_CALIBRATION_STATUS)
     EEPROM.get(IMU_EEPROM_CALIBRATION_ID, calibrationData);
   else
-    setupSensorCalibration();
+    setupCalibration();
 
   calibrationDisplay(calibrationData, "\t\t");
 
@@ -154,7 +161,7 @@ void sensorMPU6050::setupSensors() {
   Serial.println(F("\t...sensor IMU successful."));
 }
 
-void sensorMPU6050::setupSensorCalibration() {
+void sensorMPU6050::setupCalibration() {
   Serial.println(F("\t\tSetup sensor IMU calibrating... keep rocket perpendicular to a level surface"));
 
   calibrationData = { 0 };
@@ -192,15 +199,14 @@ void sensorMPU6050::calibrationDisplay(calData calibrationData, const char* offs
   Serial.println(F("IMU Bias"));
 
   Serial.print(offset);
-  Serial.print(F("Accel biases X/Y/Z: "));
+  Serial.print(F("\tAccel biases X/Y/Z: "));
   Serial.print(calibrationData.accelBias[0]);
   Serial.print(F(", "));
   Serial.print(calibrationData.accelBias[1]);
   Serial.print(F(", "));
-  Serial.print(offset);
   Serial.println(calibrationData.accelBias[2]);
   Serial.print(offset);
-  Serial.print(F("Gyro biases X/Y/Z: "));
+  Serial.print(F("\tGyro biases X/Y/Z: "));
   Serial.print(calibrationData.gyroBias[0]);
   Serial.print(F(", "));
   Serial.print(calibrationData.gyroBias[1]);
@@ -209,14 +215,14 @@ void sensorMPU6050::calibrationDisplay(calData calibrationData, const char* offs
   // debug(F("hasMagnetometer"), _imu.hasMagnetometer());
   if (_imu.hasMagnetometer()) {
     Serial.print(offset);
-    Serial.print(F("Mag biases X/Y/Z: "));
+    Serial.print(F("\tMag biases X/Y/Z: "));
     Serial.print(calibrationData.magBias[0]);
     Serial.print(F(", "));
     Serial.print(calibrationData.magBias[1]);
     Serial.print(F(", "));
     Serial.println(calibrationData.magBias[2]);
     Serial.print(offset);
-    Serial.print(F("Mag Scale X/Y/Z: "));
+    Serial.print(F("\tMag Scale X/Y/Z: "));
     Serial.print(calibrationData.magScale[0]);
     Serial.print(F(", "));
     Serial.print(calibrationData.magScale[1]);
@@ -228,7 +234,7 @@ void sensorMPU6050::calibrationDisplay(calData calibrationData, const char* offs
 void sensorMPU6050::calibrationResetCommand() {
   Serial.println(F("\tSetup sensor IMU calibrating..."));
   
-  setupSensorCalibration();
+  setupCalibration();
 
   calibrationDisplay(calibrationData, "");
 

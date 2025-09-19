@@ -4,22 +4,28 @@
 #include "FastIMU.h"
 
 // #include "kalman.h"
+#include "sensorBase.h"
 #include "sensorData.h"
 
-class sensorMPU6050 {
+class sensorMPU6050: public sensorBase {
   public:
     sensorMPU6050();
-    void sleepSensors();
-    void setupSensors();
-    accelerometerValues readSensorAccelerometer();
-    gyroscopeValues readSensorGyroscope();
-    void calibrationResetCommand();
+    void calibrationResetCommand() override;
+    sensorValuesStruct initialize() override;
+    accelerometerValues readAccelerometer() override;
+    gyroscopeValues readGyroscope() override;
+    void sleep() override;
+    void setup() override;
     
   private:
     void calibrationDisplay(calData calibrationData, const char* offset);
-    void setupSensorCalibration();
+    void setupCalibration();
 
-    MPU6050 _imu = MPU6050(Wire2);
+#if defined(TEENSYDUINO)
+    MPU6050 _imu = MPU6050(Wire2); // TODO: need to make this configurable...
+#else
+    MPU6050 _imu = MPU6050(Wire1); // TODO: need to make this configurable...
+#endif
     calData calibrationData = { 0 };  //Calibration data
     // kalman _kalmanAccelX;
     // kalman _kalmanAccelY;

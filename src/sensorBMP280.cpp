@@ -11,7 +11,6 @@
 // atmosphereValues sensorBMP::initializeSensors() {
 //   atmosphereValues values;
 
-//   Serial.println(F("\tinitialize sensors..."));
 //   // float resultHumidity = 0;
 //   float resultPressure = 0;
 //   float resultTemperature = 0;
@@ -54,7 +53,6 @@
 //   }
 //   float altitudeInitial = (sum / samples);
 //   debug(F("altitudeInitial"), altitudeInitial);
-//   Serial.println(F("\t...initialize sensors"));
 //   values.altitude = altitudeInitial;
 //   return values;
 // }
