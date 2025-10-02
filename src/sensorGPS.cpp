@@ -3,29 +3,43 @@
 
 #include "sensorGPS.h"
 
+int sensorGPS::setup(int baud) {
+    _ptr = _buffer;
+    if (_bufferLen) {
+      *_ptr = '\0';
+      _buffer[_bufferLen - 1] = '\0';
+    }
+    
+    clear();
+  return 0;
+}
+
 void sensorGPS::clear(void)
 {
   _alt = LONG_MIN;  // altitude in millimeters above user datum ellipsoid (= MSL Altitude + Geoid Separation from GGA message)
+  _altMSL = LONG_MIN;  // altitude in millimeters above user datum ellipsoid (= MSL Altitude + Geoid Separation from GGA message)
+  _altSep = LONG_MIN; // height above WGS84 Geoid in millimetres
   _cog = LONG_MIN;  // course over ground in degrees * 1000
   _date = 0; // date as DDMMYY
   _day = 0;
-  _fix = 0;  // 0:no fix, 1:fix 2:2D fix, 3:3D fix
+  _fix = SCHAR_MIN;  // 0:no fix, 1:fix 2:2D fix, 3:3D fix
   _fixAge = LONG_MIN;
+  _fixType = SCHAR_MIN;
   _hacc = LONG_MIN; // horizontal accuracy estimate in millimeters
-  _hdop = LONG_MIN; // HDOP Horizontal Dilution of Precision
+  _hdop = SHRT_MIN; // HDOP Horizontal Dilution of Precision
   _lat = LONG_MIN;  // Latitude in degrees * 10e7
   _lon = LONG_MIN;  // Longitude in degrees * 10e7
   _month = 0;
-  _satellites = 0;  // number of satellites
-  _sep = LONG_MIN; // height above WGS84 Geoid in millimetres
+  _pdop = SHRT_MIN; // PDOP Position Dilution of Precision
+  _satellites = LONG_MIN;  // number of satellites
   _sog = LONG_MIN;  // speed over ground in mm/s
-  _tdop = LONG_MIN; // TDOP Time Dilution of Precision
+  _tdop = SHRT_MIN; // TDOP Time Dilution of Precision
   _time = 0; // time in milliseconds since midnight UTC
   _time_offset_hours = 0;
   _time_offset_minutes = 0;
   _year = 0;
   _vacc = LONG_MIN; // vertical accuracy estimate in millimeters
-  _vdop = LONG_MIN; // VDOP Vertical Dilution of Precision
+  _vdop = SHRT_MIN; // VDOP Vertical Dilution of Precision
   _veld = LONG_MIN; // vertical downward speed in mm/s
 
   _use_only_pubx00 = false;
@@ -69,6 +83,8 @@ bool sensorGPS::process(char c)
 
       if (_buffer[1] == 'G' && strncmp(&_buffer[3], "GGA,", 4) == 0)
           return processGGA(_buffer);
+      if (_buffer[1] == 'G' && strncmp(&_buffer[3], "GSA,", 4) == 0)
+          return processGSA(_buffer);
       if (_buffer[1] == 'G' && strncmp(&_buffer[3], "RMC,", 4) == 0)
           return processRMC(_buffer);
       if (strncmp(_buffer, "$GNZDA,", 9) == 0)
@@ -93,7 +109,7 @@ void sensorGPS::handleFix(int32_t fix) {
   _fix = fix;
   if (!fix) {
     // If lost fix, then reset age...
-    _fixAge = LONG_MIN;
+    _fixAge = SCHAR_MIN;
     return;
   }
   
@@ -193,6 +209,249 @@ bool sensorGPS::parseFloatRef(const char * &s, int scaledigits, int32_t &v) {
   return false; // not at end of string or at delimiter - something is wrong
 }
 
+// chop a float as scaled integer of string, returns true if field found or empty
+// sets s=nullptr if whole string was parsed
+// sets v=LONG_MIN if field was empty
+bool sensorGPS::parseFloatRef(const char * &s, int scaledigits, int8_t &v) {
+  bool empty = true;
+  
+  // exit if no more fields
+  if (s == nullptr)
+    return false;
+
+  // test negative sign
+  bool neg = (s[0]=='-');
+  if (neg) 
+    s++; //skip over '-'
+
+  //before decimal point
+  v = 0;
+  while (s[0]>='0' && s[0]<='9') {
+    empty = false;
+    v = v * 10 + (s[0] - '0');
+    s++; // next digit
+  }
+
+  // after decimal point
+  if (s[0] == '.') {
+    s++; //skip decimal point
+    while (s[0]>='0' && s[0]<='9') {
+      empty = false;
+      if (scaledigits>0) {
+        v = v * 10 + (s[0] - '0');
+        scaledigits--;
+      }
+      s++; // next digit
+    }
+  }
+
+  // scale any remaining scaledigits
+  while (scaledigits>0) {
+    v = v * 10;
+    scaledigits--;
+  }
+
+  // empty check
+  if (empty) 
+    v = USHRT_MAX;
+
+  // check end of string
+  if (isEndOfFields(s[0])) {
+      s = nullptr; 
+      return true;
+  }
+  
+  // check ending delimiter
+  if (s[0] == ',') {
+    s++; //skip delimiter
+    return true;
+  }
+  
+  return false; // not at end of string or at delimiter - something is wrong
+}
+
+bool sensorGPS::parseFloatRef(const char * &s, int scaledigits, int16_t &v) {
+  bool empty = true;
+  
+  // exit if no more fields
+  if (s == nullptr)
+    return false;
+
+  // test negative sign
+  bool neg = (s[0]=='-');
+  if (neg) 
+    s++; //skip over '-'
+
+  //before decimal point
+  v = 0;
+  while (s[0]>='0' && s[0]<='9') {
+    empty = false;
+    v = v * 10 + (s[0] - '0');
+    s++; // next digit
+  }
+
+  // after decimal point
+  if (s[0] == '.') {
+    s++; //skip decimal point
+    while (s[0]>='0' && s[0]<='9') {
+      empty = false;
+      if (scaledigits>0) {
+        v = v * 10 + (s[0] - '0');
+        scaledigits--;
+      }
+      s++; // next digit
+    }
+  }
+
+  // scale any remaining scaledigits
+  while (scaledigits>0) {
+    v = v * 10;
+    scaledigits--;
+  }
+
+  // empty check
+  if (empty) 
+    v = USHRT_MAX;
+
+  // check end of string
+  if (isEndOfFields(s[0])) {
+      s = nullptr; 
+      return true;
+  }
+  
+  // check ending delimiter
+  if (s[0] == ',') {
+    s++; //skip delimiter
+    return true;
+  }
+  
+  return false; // not at end of string or at delimiter - something is wrong
+}
+
+bool sensorGPS::parseFloatRef(const char * &s, int scaledigits, uint16_t &v) {
+  bool empty = true;
+  
+  // exit if no more fields
+  if (s == nullptr)
+    return false;
+
+  // test negative sign
+  bool neg = (s[0]=='-');
+  if (neg) 
+    s++; //skip over '-'
+
+  //before decimal point
+  v = 0;
+  while (s[0]>='0' && s[0]<='9') {
+    empty = false;
+    v = v * 10 + (s[0] - '0');
+    s++; // next digit
+  }
+
+  // after decimal point
+  if (s[0] == '.') {
+    s++; //skip decimal point
+    while (s[0]>='0' && s[0]<='9') {
+      empty = false;
+      if (scaledigits>0) {
+        v = v * 10 + (s[0] - '0');
+        scaledigits--;
+      }
+      s++; // next digit
+    }
+  }
+
+  // scale any remaining scaledigits
+  while (scaledigits>0) {
+    v = v * 10;
+    scaledigits--;
+  }
+
+  // empty check
+  if (empty) 
+    v = USHRT_MAX;
+
+  // check end of string
+  if (isEndOfFields(s[0])) {
+      s = nullptr; 
+      return true;
+  }
+  
+  // check ending delimiter
+  if (s[0] == ',') {
+    s++; //skip delimiter
+    return true;
+  }
+  
+  return false; // not at end of string or at delimiter - something is wrong
+}
+
+// chop an integer of string, returns true if field found or empty
+// sets s=nullptr if whole string was parsed
+bool sensorGPS::parseIntRef(const char * &s, int8_t &v) {
+  if (s == nullptr) 
+    return false;
+
+  bool neg = (s[0]=='-');
+  if (neg) 
+    s++; // skip over '-'
+
+  v = 0;
+  while (s[0]>='0' && s[0]<='9') {
+    v = v * 10 + (s[0] - '0');
+    s++; // next digit
+  }
+  if (neg) 
+    v = -v;
+  
+  // check end of string
+  if (isEndOfFields(s[0])) {
+    s = nullptr; 
+    return true;
+  }
+  
+  // check ending delimiter
+  if (s[0] == ',') {
+    s++; // skip delimiter
+    return true;
+  }
+  
+  return false; // not at end of string or at delimiter - something is wrong
+}
+
+// chop an integer of string, returns true if field found or empty
+// sets s=nullptr if whole string was parsed
+bool sensorGPS::parseIntRef(const char * &s, int16_t &v) {
+  if (s == nullptr) 
+    return false;
+
+  bool neg = (s[0]=='-');
+  if (neg) 
+    s++; // skip over '-'
+
+  v = 0;
+  while (s[0]>='0' && s[0]<='9') {
+    v = v * 10 + (s[0] - '0');
+    s++; // next digit
+  }
+  if (neg) 
+    v = -v;
+  
+  // check end of string
+  if (isEndOfFields(s[0])) {
+    s = nullptr; 
+    return true;
+  }
+  
+  // check ending delimiter
+  if (s[0] == ',') {
+    s++; // skip delimiter
+    return true;
+  }
+  
+  return false; // not at end of string or at delimiter - something is wrong
+}
+
 // chop an integer of string, returns true if field found or empty
 // sets s=nullptr if whole string was parsed
 bool sensorGPS::parseIntRef(const char * &s, int32_t &v) {
@@ -228,7 +487,7 @@ bool sensorGPS::parseIntRef(const char * &s, int32_t &v) {
 
 // chop an integer of string, returns true if field found or empty
 // sets s=nullptr if whole string was parsed
-bool sensorGPS::parseInt8Ref(const char * &s, int8_t &v) {
+bool sensorGPS::parseIntRef(const char * &s, uint8_t &v) {
   if (s == nullptr) 
     return false;
 
@@ -241,8 +500,68 @@ bool sensorGPS::parseInt8Ref(const char * &s, int8_t &v) {
     v = v * 10 + (s[0] - '0');
     s++; // next digit
   }
+  
+  // check end of string
+  if (isEndOfFields(s[0])) {
+    s = nullptr; 
+    return true;
+  }
+  
+  // check ending delimiter
+  if (s[0] == ',') {
+    s++; // skip delimiter
+    return true;
+  }
+  
+  return false; // not at end of string or at delimiter - something is wrong
+}
+
+// chop an integer of string, returns true if field found or empty
+// sets s=nullptr if whole string was parsed
+bool sensorGPS::parseIntRef(const char * &s, uint16_t &v) {
+  if (s == nullptr) 
+    return false;
+
+  bool neg = (s[0]=='-');
   if (neg) 
-    v = -v;
+    s++; // skip over '-'
+
+  v = 0;
+  while (s[0]>='0' && s[0]<='9') {
+    v = v * 10 + (s[0] - '0');
+    s++; // next digit
+  }
+  
+  // check end of string
+  if (isEndOfFields(s[0])) {
+    s = nullptr; 
+    return true;
+  }
+  
+  // check ending delimiter
+  if (s[0] == ',') {
+    s++; // skip delimiter
+    return true;
+  }
+  
+  return false; // not at end of string or at delimiter - something is wrong
+}
+
+// chop an integer of string, returns true if field found or empty
+// sets s=nullptr if whole string was parsed
+bool sensorGPS::parseIntRef(const char * &s, uint32_t &v) {
+  if (s == nullptr) 
+    return false;
+
+  bool neg = (s[0]=='-');
+  if (neg) 
+    s++; // skip over '-'
+
+  v = 0;
+  while (s[0]>='0' && s[0]<='9') {
+    v = v * 10 + (s[0] - '0');
+    s++; // next digit
+  }
   
   // check end of string
   if (isEndOfFields(s[0])) {
@@ -399,12 +718,15 @@ bool sensorGPS::processGGA(const char *s) {
 
   //Status
   /*
-  0 No Fix / Invalid
-  1 Standard GPS (2D/3D)
-  2 Differential GPS
-  6 Estimated (DR) Fix
+  0: Fix not valid
+  1: StandardGPS fix (2D/3D)
+  2: Differential GPS fix (DGNSS), SBAS, OmniSTAR VBS, Beacon, RTX in GVBS mode
+  3: Not applicable
+  4: RTK Fixed, xFill, RTX
+  5: RTK Float, OmniSTAR XP/HP, Location RTK, QZSS CLAS
+  6: INS Dead reckoning
   */
-  int32_t tmp_fix = (*s >= '1' && *s <= '9' ? 1 : 0);
+  int8_t tmp_fix = (*s >= '1' && *s <= '9' ? 1 : 0);
   s += 2; // Skip position fix flag and comma
 
   // Number of satellites
@@ -413,13 +735,13 @@ bool sensorGPS::processGGA(const char *s) {
     return false;
 
   // HDOP Horizontal Dilution of Precision
-  int32_t tmp_hdop;
+  int16_t tmp_hdop;
   if (!parseFloatRef(s, 3, tmp_hdop))
     return false;
 
   // MSL Altitude in m
-  int32_t tmp_altMsl;
-  if (!parseFloatRef(s, 3, tmp_altMsl)) 
+  int32_t tmp_altMSL;
+  if (!parseFloatRef(s, 3, tmp_altMSL)) 
     return false;
 
   // skip 'M'
@@ -427,8 +749,8 @@ bool sensorGPS::processGGA(const char *s) {
     return false;
 
   // Geoid Separation in m
-  int32_t tmp_sep;
-  if (!parseFloatRef(s, 3, tmp_sep))
+  int32_t tmp_altSep;
+  if (!parseFloatRef(s, 3, tmp_altSep))
     return false;
 
   // skip 'M'
@@ -444,23 +766,96 @@ bool sensorGPS::processGGA(const char *s) {
   // That's all we care about, save received data
   // only save geoid altitude if using PUBX00 (PUBX00 does not have this field)
   if (_use_only_pubx00) {
-    _sep = tmp_sep;
+    _altSep = tmp_altSep;
     return false;
   }
 
   handleFix(tmp_fix);
 
-  if (tmp_altMsl != LONG_MIN && tmp_sep != LONG_MIN)
-    _alt = tmp_altMsl + tmp_sep; // altitude above geoid
+  if (tmp_altMSL != LONG_MIN && tmp_altSep != LONG_MIN)
+    _alt = tmp_altMSL + tmp_altSep; // altitude above geoid
   else
-    _alt = tmp_altMsl;
+    _alt = tmp_altMSL;
+  _altMSL = tmp_altMSL;
 
   _hdop = tmp_hdop;
   _lat = tmp_lat;
   _lon = tmp_lon;
   _satellites = tmp_sat;
-  _sep = tmp_sep;
+  _altSep = tmp_altSep;
   _time = tmp_time;
+
+  _update_ms = millis();
+
+  return true;
+}
+
+bool sensorGPS::processGSA(const char *s) {
+#ifdef DEBUG
+  Serial.print("processGSA: ");
+  Serial.println(_buffer);
+#endif
+
+  // skip message ID
+  if (!skipFieldRef(s))
+    return false;
+
+  // skip mode op, m/a
+  if (!skipFieldRef(s))
+    return false;
+
+  // Fix type
+  /*
+  1 = not available
+  2 = 2D
+  3 = 3D
+  */
+  int8_t tmp_fixType = (*s >= '1' && *s <= '3' ? 1 : 0);
+  s += 2; // Skip position fix flag and comma
+
+  // Serial.println(s);
+  // Serial.println("4...");
+  for (int i = 0; i < 12; i++) {
+    // Serial.print("\t4...");
+    // Serial.println(i);
+    skipFieldRef(s);
+    // Serial.println(s);
+  }
+
+  // Serial.println(s);
+  // PDOP Position Dilution of Precision
+  int16_t tmp_pdop;
+  if (!parseFloatRef(s, 3, tmp_pdop))
+    return false;
+
+  // HDOP Horizontal Dilution of Precision
+  int16_t tmp_hdop;
+  if (!parseFloatRef(s, 3, tmp_hdop))
+    return false;
+
+  // VDOP Vertical Dilution of Precision
+  int16_t tmp_vdop;
+  if (!parseFloatRef(s, 3, tmp_vdop))
+    return false;
+
+  // // GNSS ID
+  // int32_t tmp_gnss;
+  // if (!parseIntRef(s, tmp_gnss)) 
+  //   return false;
+
+  _processedGSA++;
+  if (_processedGSA == UINT32_MAX) {
+    _processedGSA = 0;
+    _processedGSA_over++;
+  }
+
+  if (_use_only_pubx00)
+    return false;
+
+  _fixType = tmp_fixType;
+  _hdop = tmp_hdop;
+  _pdop = tmp_pdop;
+  _vdop = tmp_vdop;
 
   _update_ms = millis();
 
@@ -512,7 +907,7 @@ bool sensorGPS::processPUBX00(const char* s) {
   RK Combined GPS + dead reckoning solution
   TT Time only solution  
   */
-  int32_t tmp_fix;
+  int8_t tmp_fix;
   if (s[0] == 'D' && s[1] == 'R') 
     tmp_fix = 1; 
   else if (s[0] == 'G' && s[1] == '2') 
@@ -560,17 +955,17 @@ bool sensorGPS::processPUBX00(const char* s) {
     return false;
 
   // HDOP Horizontal Dilution of Precision
-  int32_t tmp_hdop;
+  int16_t tmp_hdop;
   if (!parseFloatRef(s, 3, tmp_hdop)) 
     return false;
 
   // VDOP Vertical Dilution of Precision
-  int32_t tmp_vdop;
+  int16_t tmp_vdop;
   if (!parseFloatRef(s, 3, tmp_vdop)) 
     return false;
 
   // TDOP Time Dilution of Precision
-  int32_t tmp_tdop;
+  int16_t tmp_tdop;
   if (!parseFloatRef(s, 3, tmp_tdop)) 
     return false;
 
@@ -594,6 +989,7 @@ bool sensorGPS::processPUBX00(const char* s) {
 
   // That's all we care about, save received data
   _alt = tmp_alt;
+  _altMSL = tmp_alt;
   _cog = tmp_cog;
   _hacc = tmp_hacc;
   _hdop = tmp_hdop;
@@ -630,7 +1026,7 @@ bool sensorGPS::processRMC(const char* s) {
     return false;
 
   // Status
-  bool tmp_fix = (*s == 'A' ? 1 : 0);
+  bool tmp_type = (*s == 'A' ? 1 : 0);
   s += 2; // Skip validity and comma
 
   // Latitude + N/S indicator
@@ -673,8 +1069,6 @@ bool sensorGPS::processRMC(const char* s) {
       _date = tmp_date;
       return false;
   }
-
-  handleFix(tmp_fix);
   
   _cog = tmp_cog;
   _date = tmp_date;
@@ -721,12 +1115,12 @@ bool sensorGPS::processZDA(const char* s) {
 
   // Time Offset Hours from GMT
   int8_t tmp_time_offset_hours;
-  if (!parseInt8Ref(s, tmp_time_offset_hours))
+  if (!parseIntRef(s, tmp_time_offset_hours))
     return false;
 
   // Time Offset Minutes from GMT
   int8_t tmp_time_offset_minutes;
-  if (!parseInt8Ref(s, tmp_time_offset_minutes))
+  if (!parseIntRef(s, tmp_time_offset_minutes))
     return false;
 
   _processedZDA++;

@@ -2,25 +2,61 @@
 // https://github.com/qqqlab/madflight/blob/main/src/gps/nmea/gps_nmea_pubx_parser.h
 
 #include <stdint.h>
-#include <limits.h>  //for LONG_MIN
 #include <Arduino.h>
+#include <limits.h>
 
 // #define DEBUG
 
 class sensorGPS {
   public:
     sensorGPS() {
-      _ptr = _buffer;
-      if (_bufferLen) {
-        *_ptr = '\0';
-        _buffer[_bufferLen - 1] = '\0';
-      }
+      // _ptr = _buffer;
+      // if (_bufferLen) {
+      //   *_ptr = '\0';
+      //   _buffer[_bufferLen - 1] = '\0';
+      // }
       
-      clear();
+      // clear();
     }
+
+    virtual int setup(int baud);
 
     float altitude() {
       return _alt / 1000.0;
+    }
+    float altitudeFiltered() {
+      return altitude(); // TODO
+    }
+    float altitudeRaw() {
+      return _alt;
+    }
+    bool altitudeValid() {
+      return _alt != LONG_MIN;
+    }
+    float altitudeMSL() {
+      return _altMSL / 1000.0;
+    }
+    float altitudeMSLFiltered() {
+      return altitudeMSL(); // TODO
+    }
+    float altitudeMSLRaw() {
+      return _altMSL;
+    }
+    bool altitudeMSLValid() {
+      return _altMSL != LONG_MIN;
+    }
+    // geoid separation: difference between ellipsoid and mean sea level in millimetres
+    float altitudeSep() {
+      return _altSep / 1000.0;
+    }
+    bool altitudeSepValid() {
+      return _altSep != LONG_MIN;
+    }
+    float altitudeSepFiltered() {
+      return altitudeSep(); // TODO
+    }
+    int32_t altitudeSepRaw() {
+      return _altSep;
     }
     char* checksumCalc() {
       return _checksumCalc;
@@ -39,44 +75,114 @@ class sensorGPS {
     uint32_t failed_over() {
       return _failed_over;
     }
-    // 0:no fix, 1:fix 2:2D fix, 3:3D fix
-    int32_t fix() {
+    // 0: Fix not valid 1: StandardGPS fix (2D/3D) 2: Differential GPS fix (DGNSS), SBAS, OmniSTAR VBS, Beacon, RTX in GVBS mode
+    // 3: Not applicable 4: RTK Fixed, xFill, RTX 5: RTK Float, OmniSTAR XP/HP, Location RTK, QZSS CLAS 6: INS Dead reckoning
+    int8_t fix() {
       return _fix;
+    }
+    float fixFiltered() {
+      return fix(); // TODO
+    }
+    bool fixValid() {
+      return _fix != SCHAR_MIN;
     }
     int32_t fixAge() {
       return _fixAge;
+    }
+    bool fixAgeValid() {
+      return true;
+    }
+    // 0: no fix, 1: 2D fix, 2: 3D fix of last received GSA message
+    int8_t fixType() {
+      return _fixType;
+    }
+    bool fixTypeValid() {
+      return _fixType != SCHAR_MIN;
     }
     // horizontal accuracy estimate in millimeters
     int32_t hacc() {
       return _hacc;
     }
     // HDOP Horizontal Dilution of Precision
-    int32_t hdop() {
+    float hdop() {
+      return _hdop / 1000.0;
+    }
+    float hdopFiltered() {
+      return hdop(); // TODO
+    }
+    int16_t hdopRaw() {
       return _hdop;
     }
-    // latitude in degrees * 10e7
+    bool hdopValid() {
+      return _hdop != SHRT_MIN;
+    }
+    // latitude in degrees
     float latitude() {
       return _lat / 10000000.0;
     }
-    // longitude in degrees * 10e7
+    float latitudeFiltered() {
+      return latitude(); // TODO
+    }
+    // latitude in degrees * 10e7
+    float latitudeRaw() {
+      return _lat;
+    }
+    bool latitudeValid() {
+      return _lat != LONG_MIN;
+    }
+    // longitude in degrees
     float longitude() {
       return _lon / 10000000.0;
+    }
+    float longitudeFiltered() {
+      return longitude(); // TODO
+    }
+    // longitude in degrees * 10e7
+    float longitudeRaw() {
+      return _lon / 10000000.0;
+    }
+    bool longitudeValid() {
+      return _lon != LONG_MIN;
+    }
+    // PDOP Position Dilution of Precision
+    float pdop() {
+      return _pdop / 1000.0;
+    }
+    float pdopFiltered() {
+      return pdop(); // TODO
+    }
+    int16_t pdopRaw() {
+      return _pdop;
+    }
+    bool pdopValid() {
+      return _pdop != SHRT_MIN;
     }
     // number of satellites
     int32_t satellites() {
       return _satellites;
     }
-    // geoid separation: difference between ellipsoid and mean sea level in millimetres
-    int32_t sep() {
-      return _sep;
+    int32_t satellitesFiltered() {
+      return satellites(); // TODO
+    }
+    bool satellitesValid() {
+      return _satellites != LONG_MIN;
     }
     // speed over ground in mm/s
     int32_t sog() {
       return _sog;
     }
     // TDOP Time Dilution of Precision
-    int32_t tdop() {
+    float tdop() {
+      return _tdop / 1000.0;
+    }
+    float tdopFiltered() {
+      return tdop(); // TODO
+    }
+    int16_t tdopRaw() {
       return _tdop;
+    }
+    bool tdopValid() {
+      return _tdop != SHRT_MIN;
     }
     // time in milliseconds since midnight UTC
     int32_t timeMs() {
@@ -87,10 +193,18 @@ class sensorGPS {
       return _vacc;
     }
     // VDOP Vertical Dilution of Precision
-    int32_t vdop() {
+    float vdop() {
+      return _vdop / 1000.0;
+    }
+    float vdopFiltered() {
+      return vdop(); // TODO
+    }
+    int16_t vdopRaw() {
       return _vdop;
     }
-    // VDOP Vertical Dilution of Precision
+    bool vdopValid() {
+      return _vdop != SHRT_MIN;
+    }
     int32_t veld() {
       return _veld;
     }
@@ -126,6 +240,12 @@ class sensorGPS {
     }
     uint32_t processedGGA_over() {
       return _processedGGA_over;
+    }
+    uint32_t processedGSA() {
+      return _processedGSA;
+    }
+    uint32_t processedGSA_over() {
+      return _processedGSA_over;
     }
     uint32_t processedPUBX() {
       return _processedPUBX;
@@ -194,28 +314,34 @@ class sensorGPS {
 
     void handleFix(int32_t fix);
 
-    bool parseLatLngRef(const char* &s, int32_t &v);
-    bool parseTimeRef(const char* &s, int32_t &v);
     //move s to next field, set s=nullpointer if no more fields
-    bool skipFieldRef(const char* &s);
+    bool parseFloatRef(const char * &s, int scaledigits, int8_t &v);
+    bool parseFloatRef(const char * &s, int scaledigits, int16_t &v);
+    bool parseFloatRef(const char * &s, int scaledigits, int32_t &v);
+    bool parseFloatRef(const char * &s, int scaledigits, uint16_t &v);
+    //chop an integer of string, returns true if field found or empty
+    //sets s=nullptr if whole string was parsed
+    bool parseIntRef(const char * &s, int8_t &v);
+    bool parseIntRef(const char * &s, int16_t &v);
+    bool parseIntRef(const char * &s, int32_t &v);
+    bool parseIntRef(const char * &s, uint8_t &v);
+    bool parseIntRef(const char * &s, uint16_t &v);
+    bool parseIntRef(const char * &s, uint32_t &v);
+    bool parseLatLngRef(const char* &s, int32_t &v);
     //chop an integer of string, returns true if field found or empty
     //sets s=nullptr if whole string was parsed
     bool parseUInt8Ref(const char * &s, uint8_t &v);
     //chop an integer of string, returns true if field found or empty
     //sets s=nullptr if whole string was parsed
     bool parseUInt16Ref(const char * &s, uint16_t &v);
-    //chop an integer of string, returns true if field found or empty
-    //sets s=nullptr if whole string was parsed
-    bool parseIntRef(const char * &s, int32_t &v);
-    //chop an integer of string, returns true if field found or empty
-    //sets s=nullptr if whole string was parsed
-    bool parseInt8Ref(const char * &s, int8_t &v);
     //chop a float as scaled integer of string, returns true if field found or empty
     //sets s=nullptr if whole string was parsed
     //sets v=LONG_MIN if field was empty
-    bool parseFloatRef(const char * &s, int scaledigits, int32_t &v);
+    bool parseTimeRef(const char* &s, int32_t &v);
+    bool skipFieldRef(const char* &s);
 
     bool processGGA(const char *s);
+    bool processGSA(const char *s);
     bool processPUBX00(const char* s);
     bool processRMC(const char* s);
     bool processZDA(const char* s);
@@ -227,27 +353,32 @@ class sensorGPS {
     char *_ptr;
     
     int32_t _alt; // Altitude in millimeters above user datum ellipsoid (= MSL Altitude + Geoid Separation from GGA message)
+    int32_t _altMSL;
+    int32_t _altSep; // geoid separation: difference between ellipsoid and mean sea level in millimetres
     char _checksumRcv[2];
     char _checksumCalc[3];
     int32_t _cog; // course over ground in degrees * 1000
     uint8_t _day; // day
     int32_t _date; // date as DDMMYY
-    int32_t _fix;  // 0:no fix, 1:fix 2:2D fix, 3:3D fix
-    uint32_t _fixAge;  // age of last fix
+    // 0: Fix not valid 1: StandardGPS fix (2D/3D) 2: Differential GPS fix (DGNSS), SBAS, OmniSTAR VBS, Beacon, RTX in GVBS mode
+    // 3: Not applicable 4: RTK Fixed, xFill, RTX 5: RTK Float, OmniSTAR XP/HP, Location RTK, QZSS CLAS 6: INS Dead reckoning 
+    int8_t _fix; 
+    int32_t _fixAge; // age of last fix
+    int8_t _fixType; // 0: no fix, 1: 2D fix, 2: 3D fix
     int32_t _hacc; // horizontal accuracy estimate in millimeters
-    int32_t _hdop; // HDOP Horizontal Dilution of Precision
-    int32_t _lat;  // latitude in degrees * 10e7
-    int32_t _lon;  // longitude in degrees * 10e7
+    int16_t _hdop; // HDOP Horizontal Dilution of Precision
+    int32_t _lat; // latitude in degrees * 10e7
+    int32_t _lon; // longitude in degrees * 10e7
     uint8_t _month; // month
+    int16_t _pdop; // PDOP Position Dilution of Precision
     int32_t _satellites;  // number of satellites
-    int32_t _sep; // geoid separation: difference between ellipsoid and mean sea level in millimetres
-    int32_t _sog;  // speed over ground in mm/s
-    int32_t _tdop; // TDOP Time Dilution of Precision
+    int32_t _sog; // speed over ground in mm/s
+    int16_t _tdop; // TDOP Time Dilution of Precision
     int32_t _time; // time in milliseconds since midnight UTC
     int8_t _time_offset_hours; // time zone offset from GMT in hours
     int8_t _time_offset_minutes; // time zone offset from GMT in minutes
     int32_t _vacc; // Vertical accuracy estimate in millimeters
-    int32_t _vdop; // VDOP Vertical Dilution of Precision
+    int16_t _vdop; // VDOP Vertical Dilution of Precision
     int32_t _veld; // vertical downward speed in mm/s
     uint8_t _year; // year
     
@@ -264,6 +395,8 @@ class sensorGPS {
     uint32_t _processedFix_over = 0;
     uint32_t _processedGGA = 0;
     uint32_t _processedGGA_over = 0;
+    uint32_t _processedGSA = 0;
+    uint32_t _processedGSA_over = 0;
     uint32_t _processedPUBX = 0;
     uint32_t _processedPUBX_over = 0;
     uint32_t _processedRMC = 0;
