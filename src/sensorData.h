@@ -5,7 +5,7 @@
 extern float pressureReference; // hPa local QFF (official meteor-station reading)
 extern float temperatureOutdoor; // °C  measured local outdoor temp
 
-struct accelerometerValues {
+struct __attribute__((packed)) accelerometerValues {
   float x;
   float y;
   float z;
@@ -18,7 +18,7 @@ struct atmosphereValues {
   float temperature;
 };
 
-struct gyroscopeValues {
+struct __attribute__((packed)) gyroscopeValues {
   float x;
   float y;
   float z;
