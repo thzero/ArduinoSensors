@@ -16,7 +16,7 @@ class sensorBME280: public sensorBase {
     float readAltitude() override;
     float readAltitude(atmosphereValues values) override;
     void sleep() override;
-    void setup() override;
+    byte setup() override;
     
   private:
     BME280_LITE _sensor;

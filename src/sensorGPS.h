@@ -1,3 +1,6 @@
+#ifndef _SENSOR_GPS_H
+#define _SENSOR_GPS_H
+
 // based on nmea from madflight
 // https://github.com/qqqlab/madflight/blob/main/src/gps/nmea/gps_nmea_pubx_parser.h
 
@@ -19,7 +22,7 @@ class sensorGPS {
       // clear();
     }
 
-    virtual int setup(int baud);
+    virtual byte setup(HardwareSerial& port, int baud);
 
     float altitude() {
       return _alt / 1000.0;
@@ -72,22 +75,19 @@ class sensorGPS {
     int32_t dateDDMMYY() {
       return _date;
     }
-    uint32_t failed_over() {
-      return _failed_over;
-    }
     // 0: Fix not valid 1: StandardGPS fix (2D/3D) 2: Differential GPS fix (DGNSS), SBAS, OmniSTAR VBS, Beacon, RTX in GVBS mode
     // 3: Not applicable 4: RTK Fixed, xFill, RTX 5: RTK Float, OmniSTAR XP/HP, Location RTK, QZSS CLAS 6: INS Dead reckoning
     int8_t fix() {
       return _fix;
-    }
-    float fixFiltered() {
-      return fix(); // TODO
     }
     bool fixValid() {
       return _fix != SCHAR_MIN;
     }
     int32_t fixAge() {
       return _fixAge;
+    }
+    int8_t fixAgeFiltered() {
+      return fixAge(); // TODO
     }
     bool fixAgeValid() {
       return true;
@@ -114,7 +114,7 @@ class sensorGPS {
       return _hdop;
     }
     bool hdopValid() {
-      return _hdop != SHRT_MIN;
+      return _hdop >= 0;
     }
     // latitude in degrees
     float latitude() {
@@ -155,7 +155,7 @@ class sensorGPS {
       return _pdop;
     }
     bool pdopValid() {
-      return _pdop != SHRT_MIN;
+      return _pdop >= 0;
     }
     // number of satellites
     int32_t satellites() {
@@ -165,7 +165,7 @@ class sensorGPS {
       return satellites(); // TODO
     }
     bool satellitesValid() {
-      return _satellites != LONG_MIN;
+      return _satellites >= 0;
     }
     // speed over ground in mm/s
     int32_t sog() {
@@ -182,7 +182,7 @@ class sensorGPS {
       return _tdop;
     }
     bool tdopValid() {
-      return _tdop != SHRT_MIN;
+      return _tdop >= 0;
     }
     // time in milliseconds since midnight UTC
     int32_t timeMs() {
@@ -203,7 +203,7 @@ class sensorGPS {
       return _vdop;
     }
     bool vdopValid() {
-      return _vdop != SHRT_MIN;
+      return _vdop >= 0;
     }
     int32_t veld() {
       return _veld;
@@ -217,52 +217,55 @@ class sensorGPS {
     uint32_t failed() {
       return _failed;
     }
+    uint32_t failedOver() {
+      return _failed_over;
+    }
     uint32_t processed() {
       return _processed;
     }
-    uint32_t processed_over() {
+    uint32_t processedOver() {
       return _processed_over;
     }
     uint32_t processedChecksum() {
       return _processedChecksum;
     }
-    uint32_t processedChecksum_over() {
+    uint32_t processedChecksumOver() {
       return _processedChecksum_over;
     }
     uint32_t processedFix() {
       return _processedFix;
     }
-    uint32_t processedFix_over() {
+    uint32_t processedFixOver() {
       return _processedFix_over;
     }
     uint32_t processedGGA() {
       return _processedGGA;
     }
-    uint32_t processedGGA_over() {
+    uint32_t processedGGAOver() {
       return _processedGGA_over;
     }
     uint32_t processedGSA() {
       return _processedGSA;
     }
-    uint32_t processedGSA_over() {
+    uint32_t processedGSAOver() {
       return _processedGSA_over;
     }
     uint32_t processedPUBX() {
       return _processedPUBX;
     }
-    uint32_t processedPUBX_over() {
+    uint32_t processedPUBXOver() {
       return _processedPUBX_over;
     }
     uint32_t processedRMC() {
       return _processedRMC;
     }
-    uint32_t processedRMC_over() {
+    uint32_t processedRMCOver() {
       return _processedRMC_over;
     }
     uint32_t processedZDA() {
       return _processedZDA;
     }
-    uint32_t processedZDA_over() {
+    uint32_t processedZDAOver() {
       return _processedZDA_over;
     }
 
@@ -406,3 +409,5 @@ class sensorGPS {
 
     bool _use_only_pubx00;
 };
+
+#endif

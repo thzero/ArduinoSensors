@@ -15,7 +15,7 @@ class sensorMPU6050: public sensorBase {
     accelerometerValues readAccelerometer() override;
     gyroscopeValues readGyroscope() override;
     void sleep() override;
-    void setup() override;
+    byte setup() override;
     
   private:
     void calibrationDisplay(calData calibrationData, const char* offset);

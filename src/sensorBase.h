@@ -13,7 +13,7 @@ class sensorBase {
     virtual atmosphereValues readAtmosphere();
     virtual gyroscopeValues readGyroscope();
     virtual void sleep();
-    virtual void setup();
+    virtual byte setup();
 };
 
 #endif

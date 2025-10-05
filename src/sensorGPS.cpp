@@ -3,14 +3,14 @@
 
 #include "sensorGPS.h"
 
-int sensorGPS::setup(int baud) {
-    _ptr = _buffer;
-    if (_bufferLen) {
-      *_ptr = '\0';
-      _buffer[_bufferLen - 1] = '\0';
-    }
-    
-    clear();
+byte sensorGPS::setup(HardwareSerial& port, int baud) {
+  _ptr = _buffer;
+  if (_bufferLen) {
+    *_ptr = '\0';
+    _buffer[_bufferLen - 1] = '\0';
+  }
+  
+  clear();
   return 0;
 }
 
@@ -253,7 +253,7 @@ bool sensorGPS::parseFloatRef(const char * &s, int scaledigits, int8_t &v) {
 
   // empty check
   if (empty) 
-    v = USHRT_MAX;
+    v = SHRT_MIN;
 
   // check end of string
   if (isEndOfFields(s[0])) {
@@ -1026,7 +1026,6 @@ bool sensorGPS::processRMC(const char* s) {
     return false;
 
   // Status
-  bool tmp_type = (*s == 'A' ? 1 : 0);
   s += 2; // Skip validity and comma
 
   // Latitude + N/S indicator
