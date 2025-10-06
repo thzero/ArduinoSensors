@@ -136,7 +136,7 @@ void sensorMPU6050::sleep() {
   Serial.println(F("\t...sensor IMU sleep successful."));
 }
 
-void sensorMPU6050::setup() {
+byte sensorMPU6050::setup() {
   Serial.println(F("\tSetup sensor IMU..."));
   
   _imu.setIMUGeometry(IMU_GEOMETRY);
@@ -155,10 +155,11 @@ void sensorMPU6050::setup() {
   if (err != 0) {
     Serial.print(F("\t...sensor IMU error: "));
     Serial.println(err);
-    return;
+    return 1;
   }
 
   Serial.println(F("\t...sensor IMU successful."));
+  return 0;
 }
 
 void sensorMPU6050::setupCalibration() {

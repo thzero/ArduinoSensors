@@ -4,10 +4,10 @@
 #include "FastIMU.h"
 
 // #include "kalman.h"
-#include "sensorBase.h"
+#include "sensorIMU.h"
 #include "sensorData.h"
 
-class sensorMPU6050: public sensorBase {
+class sensorMPU6050: public sensorIMU {
   public:
     sensorMPU6050();
     void calibrationResetCommand() override;
@@ -15,7 +15,7 @@ class sensorMPU6050: public sensorBase {
     accelerometerValues readAccelerometer() override;
     gyroscopeValues readGyroscope() override;
     void sleep() override;
-    void setup() override;
+    byte setup() override;
     
   private:
     void calibrationDisplay(calData calibrationData, const char* offset);

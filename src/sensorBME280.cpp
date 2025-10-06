@@ -185,7 +185,7 @@ void sensorBME280::sleep() {
   Serial.println(F("\t...sensor atmosphere sleep successful."));
 }
 
-void sensorBME280::setup() {
+byte sensorBME280::setup() {
   Serial.println(F("\tSetup sensor atmosphere..."));
 
   bool results = _sensor.begin(BME_ADDR, // returns a T/F based on initialization.
@@ -197,7 +197,7 @@ void sensorBME280::setup() {
             BME_FILTER_2);
   if (!results) {
     Serial.println(F("\t...sensor atmosphere unsuccessful."));
-    return;
+    return 1;
   }
 
   _sensor.calibrate(BME_ADDR);
@@ -220,4 +220,6 @@ void sensorBME280::setup() {
 //   // Serial.println(F("\t\t...Kalman filter initialized."));
 
   Serial.println(F("\t...sensor atmosphere successful."));
+
+  return 0;
 }
