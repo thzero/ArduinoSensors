@@ -4,10 +4,10 @@
 #include "FastIMU.h"
 
 // #include "kalman.h"
-#include "sensorBase.h"
+#include "sensorIMU.h"
 #include "sensorData.h"
 
-class sensorMPU6050: public sensorBase {
+class sensorMPU6050: public sensorIMU {
   public:
     sensorMPU6050();
     void calibrationResetCommand() override;

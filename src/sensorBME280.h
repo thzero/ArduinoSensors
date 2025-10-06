@@ -4,10 +4,10 @@
 #include <BME280_LITE.h>
 
 // #include "kalman.h"
-#include "sensorBase.h"
+#include "sensorBarometer.h"
 #include "sensorData.h"
 
-class sensorBME280: public sensorBase {
+class sensorBME280: public sensorBarometer {
   public:
     sensorBME280();
     // void init(BME280I2C bme);

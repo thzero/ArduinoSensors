@@ -8,6 +8,8 @@
 #include <Arduino.h>
 #include <limits.h>
 
+#include "sensorBase.h"
+
 // #define DEBUG
 
 class sensorGPS {
