@@ -9,6 +9,7 @@ class sensorIMU: public sensorBase {
     virtual void calibrationResetCommand();
     virtual accelerometerValues readAccelerometer();
     virtual gyroscopeValues readGyroscope();
+    virtual magnetometerValues readMagnetometer();
 };
 
 #endif

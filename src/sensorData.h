@@ -21,37 +21,39 @@ struct atmosphereValues {
 };
 
 struct __attribute__((packed)) gpsValues {
-  float altitude;
-  float altitudeFiltered;
+  int32_t altitude;
+  int32_t altitudeFiltered;
   bool altitudeValid;
-  float altitudeMSL;
-  float altitudeMSLFiltered;
+  int32_t altitudeMSL;
+  int32_t altitudeMSLFiltered;
   bool altitudeMSLValid;
-  float altitudeGeoidSep;
-  float altitudeGeoidSepFiltered;
+  int32_t altitudeGeoidSep;
+  int32_t altitudeGeoidSepFiltered;
   bool altitudeGeoidSepValid;
-  bool fix;
+  int8_t fix;
   bool fixValid;
-  int fixAge;
-  int fixAgeFiltered;
+  int32_t fixAge;
+  int32_t fixAgeFiltered;
   bool fixAgeValid;
-  float hdop;
-  float hdopFiltered;
+  int8_t fixType;
+  bool fixTypeValid;
+  uint16_t hdop;
+  uint16_t hdopFiltered;
   bool hdopValid;
-  float latitude;
-  float latitudeFiltered;
+  int32_t latitude;
+  int32_t latitudeFiltered;
   bool latitudeValid;
-  float longitude;
-  float longitudeFiltered;
+  int32_t longitude;
+  int32_t longitudeFiltered;
   bool longitudeValid;
-  float pdop;
-  float pdopFiltered;
+  uint16_t pdop;
+  uint16_t pdopFiltered;
   bool pdopValid;
-  int satellites;
-  int satellitesFiltered;
+  uint16_t satellites;
+  uint16_t satellitesFiltered;
   bool satellitesValid;
-  float vdop;
-  float vdopFiltered;
+  uint16_t vdop;
+  uint16_t vdopFiltered;
   bool vdopValid;
   
   uint32_t failed;
@@ -70,11 +72,25 @@ struct __attribute__((packed)) gyroscopeValues {
   float z;
 };
 
+struct __attribute__((packed)) magnetometerValues {
+  float x;
+  float y;
+  float z;
+};
+
+struct __attribute__((packed)) velocityValues {
+  float x;
+  float y;
+  float z;
+};
+
 struct sensorValuesStruct {
   accelerometerValues acceleration;
   atmosphereValues atmosphere;
   gpsValues gps;
   gyroscopeValues gyroscope;
+  magnetometerValues magnetometer;
+  velocityValues velocity;
 };
 
 #endif
