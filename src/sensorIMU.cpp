@@ -14,3 +14,8 @@ gyroscopeValues sensorIMU::readGyroscope() {
   gyroscopeValues values;
   return values;
 }
+
+magnetometerValues sensorIMU::readMagnetometer() {
+  magnetometerValues values;
+  return values;
+}

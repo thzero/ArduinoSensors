@@ -127,6 +127,22 @@ gyroscopeValues sensorMPU6050::readGyroscope() {
     return values;
 }
 
+magnetometerValues sensorMPU6050::readMagnetometer() {
+  magnetometerValues values;
+
+  values.x = 0.0;
+  values.y = 0.0;
+  values.z = 0.0;
+
+#if defined(DEBUG_SENSOR)
+  debug(F("magnetometer.x"), values.x);
+  debug(F("magnetometer.y"), values.y);
+  debug(F("magnetometer.z"), values.z);
+#endif
+
+    return values;
+}
+
 void sensorMPU6050::sleep() {
   Serial.println(F("\tSleep sensor IMU..."));
   

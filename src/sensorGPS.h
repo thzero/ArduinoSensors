@@ -26,42 +26,44 @@ class sensorGPS {
 
     virtual byte setup(HardwareSerial& port, int baud);
 
-    float altitude() {
-      return _alt / 1000.0;
+    int32_t altitude() {
+      // return _alt / 1000.0;
+      return _alt;
     }
-    float altitudeFiltered() {
+    int32_t altitudeFiltered() {
       return altitude(); // TODO
     }
-    float altitudeRaw() {
+    int32_t altitudeRaw() {
       return _alt;
     }
     bool altitudeValid() {
       return _alt != LONG_MIN;
     }
-    float altitudeMSL() {
-      return _altMSL / 1000.0;
+    int32_t altitudeMSL() {
+      // return _altMSL / 1000.0;
+      return _altMSL;
     }
-    float altitudeMSLFiltered() {
+    int32_t altitudeMSLFiltered() {
       return altitudeMSL(); // TODO
     }
-    float altitudeMSLRaw() {
+    int32_t altitudeMSLRaw() {
       return _altMSL;
     }
     bool altitudeMSLValid() {
       return _altMSL != LONG_MIN;
     }
     // geoid separation: difference between ellipsoid and mean sea level in millimetres
-    float altitudeSep() {
+    int32_t altitudeSep() {
       return _altSep / 1000.0;
     }
-    bool altitudeSepValid() {
-      return _altSep != LONG_MIN;
-    }
-    float altitudeSepFiltered() {
+    int32_t altitudeSepFiltered() {
       return altitudeSep(); // TODO
     }
     int32_t altitudeSepRaw() {
       return _altSep;
+    }
+    bool altitudeSepValid() {
+      return _altSep != LONG_MIN;
     }
     char* checksumCalc() {
       return _checksumCalc;
@@ -88,7 +90,7 @@ class sensorGPS {
     int32_t fixAge() {
       return _fixAge;
     }
-    int8_t fixAgeFiltered() {
+    int32_t fixAgeFiltered() {
       return fixAge(); // TODO
     }
     bool fixAgeValid() {
@@ -106,10 +108,11 @@ class sensorGPS {
       return _hacc;
     }
     // HDOP Horizontal Dilution of Precision
-    float hdop() {
-      return _hdop / 1000.0;
+    int16_t hdop() {
+      // return _hdop / 1000.0;
+      return _hdop;
     }
-    float hdopFiltered() {
+    int16_t hdopFiltered() {
       return hdop(); // TODO
     }
     int16_t hdopRaw() {
@@ -119,38 +122,42 @@ class sensorGPS {
       return _hdop >= 0;
     }
     // latitude in degrees
-    float latitude() {
-      return _lat / 10000000.0;
+    int32_t latitude() {
+      // return _lat / 10000000.0;
+      return _lat;
     }
-    float latitudeFiltered() {
+    int32_t latitudeFiltered() {
       return latitude(); // TODO
     }
     // latitude in degrees * 10e7
-    float latitudeRaw() {
+    int32_t latitudeRaw() {
       return _lat;
     }
     bool latitudeValid() {
       return _lat != LONG_MIN;
     }
     // longitude in degrees
-    float longitude() {
-      return _lon / 10000000.0;
+    int32_t longitude() {
+      // return _lon / 10000000.0;
+      return _lon;
     }
-    float longitudeFiltered() {
+    int32_t longitudeFiltered() {
       return longitude(); // TODO
     }
     // longitude in degrees * 10e7
-    float longitudeRaw() {
-      return _lon / 10000000.0;
+    int32_t longitudeRaw() {
+      // return _lon / 10000000.0;
+      return _lon;
     }
     bool longitudeValid() {
       return _lon != LONG_MIN;
     }
     // PDOP Position Dilution of Precision
-    float pdop() {
-      return _pdop / 1000.0;
+    int16_t pdop() {
+      // return _pdop / 1000.0;
+      return _pdop;
     }
-    float pdopFiltered() {
+    int16_t pdopFiltered() {
       return pdop(); // TODO
     }
     int16_t pdopRaw() {
@@ -160,10 +167,10 @@ class sensorGPS {
       return _pdop >= 0;
     }
     // number of satellites
-    int32_t satellites() {
+    uint16_t satellites() {
       return _satellites;
     }
-    int32_t satellitesFiltered() {
+    uint16_t satellitesFiltered() {
       return satellites(); // TODO
     }
     bool satellitesValid() {
@@ -174,13 +181,14 @@ class sensorGPS {
       return _sog;
     }
     // TDOP Time Dilution of Precision
-    float tdop() {
-      return _tdop / 1000.0;
+    uint16_t tdop() {
+      // return _tdop / 1000.0;
+      return _tdop;
     }
-    float tdopFiltered() {
+    uint16_t tdopFiltered() {
       return tdop(); // TODO
     }
-    int16_t tdopRaw() {
+    uint16_t tdopRaw() {
       return _tdop;
     }
     bool tdopValid() {
@@ -195,10 +203,11 @@ class sensorGPS {
       return _vacc;
     }
     // VDOP Vertical Dilution of Precision
-    float vdop() {
-      return _vdop / 1000.0;
+    uint16_t vdop() {
+      // return _vdop / 1000.0;
+      return _vdop;
     }
-    float vdopFiltered() {
+    uint16_t vdopFiltered() {
       return vdop(); // TODO
     }
     int16_t vdopRaw() {

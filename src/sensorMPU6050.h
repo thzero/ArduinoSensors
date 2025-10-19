@@ -14,6 +14,7 @@ class sensorMPU6050: public sensorIMU {
     sensorValuesStruct initialize() override;
     accelerometerValues readAccelerometer() override;
     gyroscopeValues readGyroscope() override;
+    magnetometerValues readMagnetometer() override;
     void sleep() override;
     byte setup() override;
     
