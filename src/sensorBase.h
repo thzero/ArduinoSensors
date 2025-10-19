@@ -1,6 +1,8 @@
 #ifndef _SENSOR_BASE_H
 #define _SENSOR_BASE_H
 
+#include <Arduino.h>
+
 #include "sensorData.h"
 
 class sensorBase {
