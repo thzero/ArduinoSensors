@@ -10,5 +10,7 @@ sensorValuesStruct sensorBase::initialize() {
 void sensorBase::sleep() {
 }
 
-byte sensorBase::setup() {
+byte sensorBase::setup(uint8_t calibrationId, uint8_t calibrationStatusId) {
+  _calibrationId = calibrationId;
+  _calibrationStatusId = calibrationStatusId;
 }

@@ -9,7 +9,11 @@ class sensorBase {
   public:
     virtual sensorValuesStruct initialize();
     virtual void sleep();
-    virtual byte setup();
+    virtual byte setup(uint8_t calibrationId, uint8_t calibrationStatusId);
+
+  protected:
+    uint8_t _calibrationId;
+    uint8_t _calibrationStatusId;
 };
 
 #endif

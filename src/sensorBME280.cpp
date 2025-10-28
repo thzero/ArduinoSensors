@@ -185,8 +185,10 @@ void sensorBME280::sleep() {
   Serial.println(F("\t...sensor atmosphere sleep successful."));
 }
 
-byte sensorBME280::setup() {
+byte sensorBME280::setup(uint8_t calibrationId, uint8_t calibrationStatusId) {
   Serial.println(F("\tSetup sensor atmosphere..."));
+
+  sensorBase::setup(calibrationId, calibrationStatusId);
 
   bool results = _sensor.begin(BME_ADDR, // returns a T/F based on initialization.
             BME_H_X1, // All settings can be found in the docs.

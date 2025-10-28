@@ -10,9 +10,7 @@
 // Constants
 #define IMU_ADDRESS 0x68
 #define IMU_GEOMETRY 5
-#define IMU_EEPROM_CALIBRATION_ID 200
 #define IMU_EEPROM_CALIBRATION_STATUS 99
-#define IMU_EEPROM_CALIBRATION_STATUS_ID 100
 
 sensorMPU6050::sensorMPU6050() {
 }
@@ -152,22 +150,24 @@ void sensorMPU6050::sleep() {
   Serial.println(F("\t...sensor IMU sleep successful."));
 }
 
-byte sensorMPU6050::setup() {
+byte sensorMPU6050::setup(uint8_t calibrationId, uint8_t calibrationStatusId) {
   Serial.println(F("\tSetup sensor IMU..."));
+
+  sensorBase::setup(calibrationId, calibrationStatusId);
   
   _imu.setIMUGeometry(IMU_GEOMETRY);
 
   int calibrationDataStatus = 0;
   // debug(F("calibrationDataStatus"), calibrationDataStatus);
-  EEPROM.get(IMU_EEPROM_CALIBRATION_STATUS_ID, calibrationDataStatus);
+  EEPROM.get(_calibrationStatusId, calibrationDataStatus);
   if (calibrationDataStatus == IMU_EEPROM_CALIBRATION_STATUS)
-    EEPROM.get(IMU_EEPROM_CALIBRATION_ID, calibrationData);
+    EEPROM.get(_calibrationId, _calibrationData);
   else
     setupCalibration();
 
-  calibrationDisplay(calibrationData, "\t\t");
+  calibrationDisplay(_calibrationData, "\t\t");
 
-  int err = _imu.init(calibrationData, IMU_ADDRESS);
+  int err = _imu.init(_calibrationData, IMU_ADDRESS);
   if (err != 0) {
     Serial.print(F("\t...sensor IMU error: "));
     Serial.println(err);
@@ -181,13 +181,13 @@ byte sensorMPU6050::setup() {
 void sensorMPU6050::setupCalibration() {
   Serial.println(F("\t\tSetup sensor IMU calibrating... keep rocket perpendicular to a level surface"));
 
-  calibrationData = { 0 };
-  _imu.init(calibrationData, IMU_ADDRESS);
+  _calibrationData = { 0 };
+  _imu.init(_calibrationData, IMU_ADDRESS);
 
   delay(1000);
 
-  _imu.calibrateAccelGyro(&calibrationData);
-  _imu.init(calibrationData, IMU_ADDRESS);
+  _imu.calibrateAccelGyro(&_calibrationData);
+  _imu.init(_calibrationData, IMU_ADDRESS);
 
   Serial.println(F("\t\tAccelerometer and Gyroscope calibrated!"));
 
@@ -196,15 +196,15 @@ void sensorMPU6050::setupCalibration() {
     delay(1000);
     Serial.println(F("\t\tMagnetometer calibration: move IMU in figure 8 pattern until done."));
     delay(5000);
-    _imu.calibrateMag(&calibrationData);
+    _imu.calibrateMag(&_calibrationData);
     Serial.println(F("\t\tMagnetic calibration done!"));
   }
 
   Serial.println(F("\t\tIMU Calibration complete!"));
   
   Serial.println(F("\t\tSaving Calibration values to EEPROM!"));
-  EEPROM.put(IMU_EEPROM_CALIBRATION_ID, calibrationData);
-  EEPROM.put(IMU_EEPROM_CALIBRATION_STATUS_ID, IMU_EEPROM_CALIBRATION_STATUS);
+  EEPROM.put(_calibrationId, _calibrationData);
+  EEPROM.put(_calibrationStatusId, IMU_EEPROM_CALIBRATION_STATUS);
 
   delay(1000);
 
@@ -253,9 +253,9 @@ void sensorMPU6050::calibrationResetCommand() {
   
   setupCalibration();
 
-  calibrationDisplay(calibrationData, "");
+  calibrationDisplay(_calibrationData, "");
 
-  int err = _imu.init(calibrationData, IMU_ADDRESS);
+  int err = _imu.init(_calibrationData, IMU_ADDRESS);
   if (err != 0) {
     Serial.print(F("...sensor IMU error: "));
     Serial.println(err);
