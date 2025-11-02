@@ -253,7 +253,7 @@ bool sensorGPS::parseFloatRef(const char * &s, int scaledigits, int8_t &v) {
 
   // empty check
   if (empty) 
-    v = SHRT_MIN;
+    v = (int8_t)SHRT_MIN;
 
   // check end of string
   if (isEndOfFields(s[0])) {
