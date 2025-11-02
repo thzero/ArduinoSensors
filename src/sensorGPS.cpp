@@ -3,7 +3,7 @@
 
 #include "sensorGPS.h"
 
-byte sensorGPS::setup(HardwareSerial& port, int baud) {
+int8_t sensorGPS::setup(HardwareSerial& port, int baud) {
   _ptr = _buffer;
   if (_bufferLen) {
     *_ptr = '\0';

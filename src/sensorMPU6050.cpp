@@ -150,7 +150,7 @@ void sensorMPU6050::sleep() {
   Serial.println(F("\t...sensor IMU sleep successful."));
 }
 
-byte sensorMPU6050::setup(uint8_t calibrationId, uint8_t calibrationStatusId) {
+int8_t sensorMPU6050::setup(uint8_t calibrationId, uint8_t calibrationStatusId) {
   Serial.println(F("\tSetup sensor IMU..."));
 
   sensorBase::setup(calibrationId, calibrationStatusId);

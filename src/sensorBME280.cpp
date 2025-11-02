@@ -1,4 +1,5 @@
 #include <debug.h>
+
 #include "sensorBME280.h"
 // #ifdef DEV_SIM
 // #include "simulation.h"
@@ -16,7 +17,7 @@ sensorValuesStruct sensorBME280::initialize() {
   float resultHumidity = 0;
   float resultPressure = 0;
   float resultTemperature = 0;
-  byte samples = 20;
+  int8_t samples = 20;
   float sumHumidity = 0;
   float sumPressure = 0;
   float sumTemperature = 0;
@@ -185,7 +186,7 @@ void sensorBME280::sleep() {
   Serial.println(F("\t...sensor atmosphere sleep successful."));
 }
 
-byte sensorBME280::setup(uint8_t calibrationId, uint8_t calibrationStatusId) {
+int8_t sensorBME280::setup(uint8_t calibrationId, uint8_t calibrationStatusId) {
   Serial.println(F("\tSetup sensor atmosphere..."));
 
   sensorBase::setup(calibrationId, calibrationStatusId);
