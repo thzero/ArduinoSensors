@@ -17,7 +17,7 @@ class sensorBase {
   protected:
     uint8_t _calibrationId;
     uint8_t _calibrationStatusId;
-    uint8_t _funcOverride;
+    SensorOverrideFunctionPtr _funcOverride;
 };
 
 #endif
