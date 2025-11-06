@@ -5,15 +5,19 @@
 
 #include "sensorData.h"
 
+typedef sensorValuesStruct (*SensorOverrideFunctionPtr)();
+
 class sensorBase {
   public:
     virtual sensorValuesStruct initialize();
+    int8_t initOverride(SensorOverrideFunctionPtr funcOverride);
     virtual void sleep();
     virtual int8_t setup(uint8_t calibrationId, uint8_t calibrationStatusId);
 
   protected:
     uint8_t _calibrationId;
     uint8_t _calibrationStatusId;
+    uint8_t _funcOverride;
 };
 
 #endif

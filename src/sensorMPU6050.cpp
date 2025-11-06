@@ -33,14 +33,6 @@ accelerometerValues sensorMPU6050::readAccelerometer() {
   values.y = (float)imuAccel.accelY;
   values.z = (float)imuAccel.accelZ;
 
-// #ifdef DEV_SIM
-//   if (_simulation.isRunning()) { 
-//     values.x = 0; // TODO: Simulation currently does not have these values.
-//     values.y = 0; // TODO: Simulation currently does not have these values.
-//     values.z = _simulation.valueAltitude();
-//   }
-// #endif
-
 // #if defined(KALMAN) && defined(KALMAN_ACCEL)
 //         float value = _kalmanAccelX.kalmanCalc(values.x);
 //   #if defined(DEBUG_SENSOR)
@@ -83,15 +75,6 @@ gyroscopeValues sensorMPU6050::readGyroscope() {
   values.x = (float)imuGyro.gyroX;
   values.y = (float)imuGyro.gyroY;
   values.z = (float)imuGyro.gyroZ;
-
-// #ifdef DEV_SIM
-//   if (_simulation.isRunning()) { 
-//     // TODO: Simulation currently does not have these values.
-//     values.x = 0;
-//     values.y = 0;
-//     values.z = 0;
-//   }
-// #endif
 
 // #if defined(KALMAN) && defined(KALMAN_ACCEL)
 //         float value = _kalmanGyroX.kalmanCalc(values.x);

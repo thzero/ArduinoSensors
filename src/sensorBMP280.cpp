@@ -1,8 +1,5 @@
 // #include <debug.h>
 // #include "sensorBMP.h"
-// // #ifdef DEV_SIM
-// // #include "simulation.h"
-// // #endif
 // #include <utilities.h>
 
 // sensorBMP::sensorBMP() {
@@ -143,7 +140,7 @@
 // //   Serial.println(altitude2);
 // // #endif
 
-// #ifdef DEV_SIM
+// #if defined(DEV) && defined(DEV_SIM)
 //   if (_simulation.isRunning() && _initialized) { 
 //     // values.altitude = simulationValueAltitude();
 //     values.altitude = _simulation.valueAltitude();
