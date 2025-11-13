@@ -1,8 +1,6 @@
 #include <debug.h>
+
 #include "sensorBME280.h"
-// #ifdef DEV_SIM
-// #include "simulation.h"
-// #endif
 #include <utilities.h>
 
 #define BME_ADDR 0x76 
@@ -16,7 +14,7 @@ sensorValuesStruct sensorBME280::initialize() {
   float resultHumidity = 0;
   float resultPressure = 0;
   float resultTemperature = 0;
-  byte samples = 20;
+  int8_t samples = 20;
   float sumHumidity = 0;
   float sumPressure = 0;
   float sumTemperature = 0;
@@ -71,6 +69,23 @@ atmosphereValues sensorBME280::readAtmosphere() {
     // debug(F("H"), humidityData.data);
     humidity = humidityData.data;
   }
+
+  uint32_t pressure = 0;
+  BME_SensorData pressureData = _sensor.readPressure(BME_ADDR);
+  // debug("pressureData.valid", pressureData.isValid);
+  if (pressureData.isValid) {
+    // debug(F("P"), pressureData.data);
+    pressure = pressureData.data;
+  }
+
+  uint32_t temperature = 0;
+  BME_SensorData temperatureData = _sensor.readTemperature(BME_ADDR);
+  // debug("temperatureData.valid", temperatureData.isValid);
+  if (temperatureData.isValid) {
+    // debug(F("T"), temperatureData.data);
+    temperature = temperatureData.data;
+  }
+
 // #if defined(KALMAN) && defined(KALMAN_HUMIDITY)
 //   float humidityK = _kalmanHumidity.kalmanCalc(humidity);
 // #if defined(DEBUG_SENSOR)
@@ -80,14 +95,6 @@ atmosphereValues sensorBME280::readAtmosphere() {
 // #endif
   // debug(F("__humidity"), humidity);
   values.humidity = (float)humidity;
-
-  uint32_t pressure = 0;
-  BME_SensorData pressureData = _sensor.readPressure(BME_ADDR);
-  // debug("pressureData.valid", pressureData.isValid);
-  if (pressureData.isValid) {
-    // debug(F("P"), pressureData.data);
-    pressure = pressureData.data;
-  }
 // #if defined(KALMAN) && defined(KALMAN_PRESSURE)
 //   float pressureK = _kalmanPressure.kalmanCalc(pressure);
 // #if defined(DEBUG_SENSOR)
@@ -97,14 +104,6 @@ atmosphereValues sensorBME280::readAtmosphere() {
 // #endif
   // debug(F("__pressure"), pressure);
   values.pressure = (float)pressure / 100.0;
-
-  uint32_t temperature = 0;
-  BME_SensorData temperatureData = _sensor.readTemperature(BME_ADDR);
-  // debug("temperatureData.valid", temperatureData.isValid);
-  if (temperatureData.isValid) {
-    // debug(F("T"), temperatureData.data);
-    temperature = temperatureData.data;
-  }
 // #if defined(KALMAN) && defined(KALMAN_TEMPERATURE)
 //   float temperatureK = _kalmanTemperature.kalmanCalc(temperature);
 // #if defined(DEBUG_SENSOR)
@@ -145,6 +144,16 @@ float sensorBME280::readAltitude(atmosphereValues values) {
 #endif
   values.altitude = altitude;
 
+#if defined(DEV) && defined(DEV_SIM)
+  if (_funcOverride != nullptr) {
+    sensorValuesStruct valuesOverride = _funcOverride();
+    values.altitude = valuesOverride.atmosphere.altitude;
+#if defined(DEBUG_SENSOR) && defined(DEBUG_SIM)
+    debug("sim.altitude", values.altitude);
+#endif
+  }
+#endif
+
 //   // alternate to compare...
 //   float altitude2 = NAN;
 //   if (!isnan(values.pressure) && !isnan(pressureReference) && !isnan(temperatureOutdoor))
@@ -156,16 +165,6 @@ float sensorBME280::readAltitude(atmosphereValues values) {
 // #if defined(DEBUG_SENSOR)
 //   debug("altitude2", altitude2);
 // #endif
-
-#ifdef DEV_SIM
-  if (_simulation.isRunning() && _initialized) { 
-    // values.altitude = simulationValueAltitude();
-    values.altitude = _simulation.valueAltitude();
-#if defined(DEBUG_SENSOR) && defined(DEBUG_SIM)
-    debug("sim.altitude", values.altitude);
-#endif
-  }
-#endif
 
 // #if defined(KALMAN) && defined(KALMAN_ALTITUDE)
 //   float altitudeK = _kalmanAltitude.kalmanCalc(altitude);
@@ -185,8 +184,10 @@ void sensorBME280::sleep() {
   Serial.println(F("\t...sensor atmosphere sleep successful."));
 }
 
-byte sensorBME280::setup() {
+int8_t sensorBME280::setup(uint8_t calibrationId, uint8_t calibrationStatusId) {
   Serial.println(F("\tSetup sensor atmosphere..."));
+
+  sensorBase::setup(calibrationId, calibrationStatusId);
 
   bool results = _sensor.begin(BME_ADDR, // returns a T/F based on initialization.
             BME_H_X1, // All settings can be found in the docs.

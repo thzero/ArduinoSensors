@@ -1,7 +1,7 @@
 #ifndef _SENSOR_MPU6050_H
 #define _SENSOR_MPU6050_H
 
-#include "FastIMU.h"
+#include <FastIMU.h>
 
 // #include "kalman.h"
 #include "sensorIMU.h"
@@ -16,7 +16,7 @@ class sensorMPU6050: public sensorIMU {
     gyroscopeValues readGyroscope() override;
     magnetometerValues readMagnetometer() override;
     void sleep() override;
-    byte setup() override;
+    int8_t setup(uint8_t calibrationId, uint8_t calibrationStatusId);
     
   private:
     void calibrationDisplay(calData calibrationData, const char* offset);
@@ -27,7 +27,7 @@ class sensorMPU6050: public sensorIMU {
 #else
     MPU6050 _imu = MPU6050(Wire1); // TODO: need to make this configurable...
 #endif
-    calData calibrationData = { 0 };  //Calibration data
+    calData _calibrationData = { 0 };  // Calibration data
     // kalman _kalmanAccelX;
     // kalman _kalmanAccelY;
     // kalman _kalmanAccelZ;

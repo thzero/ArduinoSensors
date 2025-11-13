@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #include <math.h>
 
 #include "sensorUtilities.h"
@@ -12,7 +11,7 @@ int32_t convertAltitude(float value) {
 }
 
 float convertAltitudeF(int32_t value) {
-    return value / 100.0;
+    return value / 1000.0;
 }
 
 int16_t convertAtmosphere(float value) {

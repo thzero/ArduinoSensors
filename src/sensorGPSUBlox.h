@@ -1,8 +1,6 @@
 #ifndef _SENSOR_GPS_UBLOX_H
 #define _SENSOR_GPS_UBLOX_H
 
-#include <Arduino.h>
-
 #include "sensorGPS.h"
 #include "sensorGPSUBlox.h"
 
@@ -10,7 +8,7 @@ class sensorGPSUBlox: public sensorGPS {
   public:
     sensorGPSUBlox();
 
-    byte setup(HardwareSerial& port, int baud);
+    int8_t setup(HardwareSerial& port, int baud);
   protected:
       // UBX message to set baud rate to 57600
     const uint8_t commandBaudRate57600[28] = {

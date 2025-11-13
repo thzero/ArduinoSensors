@@ -3,7 +3,7 @@
 sensorGPSUBlox::sensorGPSUBlox() {
 }
 
-byte sensorGPSUBlox::setup(HardwareSerial& port, int baud) {
+int8_t sensorGPSUBlox::setup(HardwareSerial& port, int baud) {
   byte results = sensorGPS::setup(port, baud);
 
   Serial.println(F("\tSetup GPS..."));

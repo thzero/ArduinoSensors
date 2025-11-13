@@ -16,7 +16,7 @@ class sensorBME280: public sensorBarometer {
     float readAltitude() override;
     float readAltitude(atmosphereValues values) override;
     void sleep() override;
-    byte setup() override;
+    int8_t setup(uint8_t calibrationId, uint8_t calibrationStatusId) override;
     
   private:
     BME280_LITE _sensor;

@@ -4,7 +4,6 @@
 // based on nmea from madflight
 // https://github.com/qqqlab/madflight/blob/main/src/gps/nmea/gps_nmea_pubx_parser.h
 
-#include <stdint.h>
 #include <Arduino.h>
 #include <limits.h>
 
@@ -24,7 +23,7 @@ class sensorGPS {
       // clear();
     }
 
-    virtual byte setup(HardwareSerial& port, int baud);
+    virtual int8_t setup(HardwareSerial& port, int baud);
 
     int32_t altitude() {
       // return _alt / 1000.0;
