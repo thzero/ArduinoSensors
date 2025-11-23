@@ -3,7 +3,13 @@
 
 #include <BME280_LITE.h>
 
-// #include "kalman.h"
+// #define KALMAN
+// #define KALMAN_ALTITUDE
+// #define KALMAN_HUMIDITY
+// #define KALMAN_PRESSURE
+// #define KALMAN_TEMPERATURE
+
+#include "kalman.h"
 #include "sensorBarometer.h"
 #include "sensorData.h"
 
@@ -22,10 +28,16 @@ class sensorBME280: public sensorBarometer {
     BME280_LITE _sensor;
     // BMP280 _sensor = BMP280();
     int _count;
-    // kalman _kalmanAltitude;
-    // kalman _kalmanHumidity;
-    // kalman _kalmanPressure;
-    // kalman _kalmanTemperature;
+    // float _previousAltitude = 0;
+    // float _previousHumidity = 0;
+    // float _previousPressure = 0;
+    // float _previousTemperature = 0;
+#if KALMAN
+    kalman _kalmanAltitude;
+    kalman _kalmanHumidity;
+    kalman _kalmanPressure;
+    kalman _kalmanTemperature;
+#endif
 };
 
 #endif

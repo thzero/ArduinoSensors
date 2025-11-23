@@ -4,18 +4,3 @@
 
 void sensorIMU::calibrationResetCommand() {
 }
-
-accelerometerValues sensorIMU::readAccelerometer() {
-  accelerometerValues values = {};
-  return values;
-}
-
-gyroscopeValues sensorIMU::readGyroscope() {
-  gyroscopeValues values;
-  return values;
-}
-
-magnetometerValues sensorIMU::readMagnetometer() {
-  magnetometerValues values;
-  return values;
-}
