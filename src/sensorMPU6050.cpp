@@ -9,7 +9,7 @@
 //////////////////////////////////////////////////////////////////////
 // Constants
 #define IMU_ADDRESS 0x68
-#define IMU_GEOMETRY 5
+#define IMU_GEOMETRY 0
 #define IMU_EEPROM_CALIBRATION_STATUS 99
 
 sensorMPU6050::sensorMPU6050() {
