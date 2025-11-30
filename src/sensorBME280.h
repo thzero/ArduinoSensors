@@ -18,7 +18,7 @@ class sensorBME280: public sensorBarometer {
     sensorBME280();
     // void init(BME280I2C bme);
     sensorValuesStruct initialize() override;
-    atmosphereValues readAtmosphere() override;
+    atmosphereValues readAtmosphere(bool update = true) override;
     float readAltitude() override;
     float readAltitude(atmosphereValues values) override;
     void sleep() override;

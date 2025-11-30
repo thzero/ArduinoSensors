@@ -15,18 +15,24 @@
 sensorMPU6050::sensorMPU6050() {
 }
 
+bool sensorMPU6050::hasMagnetometer() {
+  return _imu.hasMagnetometer();
+}
+
 sensorValuesStruct sensorMPU6050::initialize() {
   sensorValuesStruct values;
-  values.acceleration = readAccelerometer();
-  values.gyroscope = readGyroscope();
+  values.acceleration = readAccelerometer(true);
+  values.gyroscope = readGyroscope(false);
+  values.magnetometer = readMagnetometer(false);
   return values;
 }
 
-accelerometerValues sensorMPU6050::readAccelerometer() {
+accelerometerValues sensorMPU6050::readAccelerometer(bool update) {
   accelerometerValues values;
 
-  AccelData imuAccel; 
-  _imu.update();
+  AccelData imuAccel;
+  if (update)
+    _imu.update();
   _imu.getAccel(&imuAccel);
 
   values.x = (float)imuAccel.accelX;
@@ -65,11 +71,12 @@ accelerometerValues sensorMPU6050::readAccelerometer() {
     return values;
 }
 
-gyroscopeValues sensorMPU6050::readGyroscope() {
+gyroscopeValues sensorMPU6050::readGyroscope(bool update) {
   gyroscopeValues values;
 
   GyroData imuGyro;
-  _imu.update();
+  if (update)
+    _imu.update();
   _imu.getGyro(&imuGyro);
 
   values.x = (float)imuGyro.gyroX;
@@ -108,21 +115,21 @@ gyroscopeValues sensorMPU6050::readGyroscope() {
     return values;
 }
 
-magnetometerValues sensorMPU6050::readMagnetometer() {
-  magnetometerValues values;
+// magnetometerValues sensorMPU6050::readMagnetometer() {
+//   magnetometerValues values;
 
-  values.x = 0.0;
-  values.y = 0.0;
-  values.z = 0.0;
+//   values.x = 0.0;
+//   values.y = 0.0;
+//   values.z = 0.0;
 
-#if defined(DEBUG_SENSOR)
-  debug(F("magnetometer.x"), values.x);
-  debug(F("magnetometer.y"), values.y);
-  debug(F("magnetometer.z"), values.z);
-#endif
+// #if defined(DEBUG_SENSOR)
+//   debug(F("magnetometer.x"), values.x);
+//   debug(F("magnetometer.y"), values.y);
+//   debug(F("magnetometer.z"), values.z);
+// #endif
 
-    return values;
-}
+//     return values;
+// }
 
 void sensorMPU6050::sleep() {
   Serial.println(F("\tSleep sensor IMU..."));
@@ -169,6 +176,8 @@ void sensorMPU6050::setupCalibration() {
 
   delay(1000);
 
+  if (_imu.hasMagnetometer())
+    _imu.calibrateMag(&_calibrationData);
   _imu.calibrateAccelGyro(&_calibrationData);
   _imu.init(_calibrationData, IMU_ADDRESS);
 

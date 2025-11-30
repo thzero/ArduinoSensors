@@ -8,7 +8,7 @@ class sensorBarometer: public sensorBase {
   public:
     virtual float readAltitude();
     virtual float readAltitude(atmosphereValues values);
-    virtual atmosphereValues readAtmosphere();
+    virtual atmosphereValues readAtmosphere(bool update = true);
 };
 
 #endif

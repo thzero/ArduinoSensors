@@ -66,7 +66,7 @@ sensorValuesStruct sensorBME280::initialize() {
   return values;
 }
 
-atmosphereValues sensorBME280::readAtmosphere() {
+atmosphereValues sensorBME280::readAtmosphere(bool update) {
   atmosphereValues values;
 
   float humidity = 0;
