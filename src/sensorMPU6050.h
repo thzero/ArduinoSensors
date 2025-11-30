@@ -11,13 +11,13 @@ class sensorMPU6050: public sensorIMU {
   public:
     sensorMPU6050();
     void calibrationResetCommand() override;
-    sensorValuesStruct initialize() override;
-    accelerometerValues readAccelerometer() override;
-    gyroscopeValues readGyroscope() override;
-    magnetometerValues readMagnetometer() override;
-    void sleep() override;
     int8_t setup(uint8_t calibrationId, uint8_t calibrationStatusId);
     
+  protected:
+    bool hasMagnetometer() override;
+    accelerometerValues readAccelerometerI(bool update = true) override;
+    gyroscopeValues readGyroscopeI(bool update = true) override;
+
   private:
     void calibrationDisplay(calData calibrationData, const char* offset);
     void setupCalibration();

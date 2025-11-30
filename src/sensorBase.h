@@ -10,6 +10,7 @@ typedef sensorValuesStruct (*SensorOverrideFunctionPtr)();
 class sensorBase {
   public:
     virtual sensorValuesStruct initialize();
+    virtual sensorValuesStruct read(unsigned long current, unsigned long delta);
     int8_t initOverride(SensorOverrideFunctionPtr funcOverride);
     virtual void sleep();
     virtual int8_t setup(uint8_t calibrationId, uint8_t calibrationStatusId);
