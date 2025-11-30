@@ -11,7 +11,7 @@ bool sensorIMU::hasMagnetometer() {
 
 sensorValuesStruct sensorIMU::initialize() {
   sensorValuesStruct values;
-  values.acceleration = readAccelerometer(true);
+  values.acceleration = readAccelerometer();
   values.gyroscope = readGyroscope(false);
   values.magnetometer = readMagnetometer(false);
   return values;
