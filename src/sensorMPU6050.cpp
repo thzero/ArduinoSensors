@@ -15,19 +15,27 @@
 sensorMPU6050::sensorMPU6050() {
 }
 
+void sensorMPU6050::calibrationResetCommand() {
+  Serial.println(F("\tSetup sensor IMU calibrating..."));
+  
+  setupCalibration();
+
+  calibrationDisplay(_calibrationData, "");
+
+  int err = _imu.init(_calibrationData, IMU_ADDRESS);
+  if (err != 0) {
+    Serial.print(F("...sensor IMU error: "));
+    Serial.println(err);
+  }
+
+  Serial.println(F("\t...sensor IMU calibrated successful."));
+}
+
 bool sensorMPU6050::hasMagnetometer() {
   return _imu.hasMagnetometer();
 }
 
-sensorValuesStruct sensorMPU6050::initialize() {
-  sensorValuesStruct values;
-  values.acceleration = readAccelerometer(true);
-  values.gyroscope = readGyroscope(false);
-  values.magnetometer = readMagnetometer(false);
-  return values;
-}
-
-accelerometerValues sensorMPU6050::readAccelerometer(bool update) {
+accelerometerValues sensorMPU6050::readAccelerometerI(bool update) {
   accelerometerValues values;
 
   AccelData imuAccel;
@@ -39,29 +47,6 @@ accelerometerValues sensorMPU6050::readAccelerometer(bool update) {
   values.y = (float)imuAccel.accelY;
   values.z = (float)imuAccel.accelZ;
 
-// #if defined(KALMAN) && defined(KALMAN_ACCEL)
-//         float value = _kalmanAccelX.kalmanCalc(values.x);
-//   #if defined(DEBUG_SENSOR)
-//         Serial.print(F("_kalmanAccelX="));
-//         Serial.println(value);
-//   #endif
-//         values.x = value;
-
-//         value = _kalmanAccelY.kalmanCalc(values.y);
-//   #if defined(DEBUG_SENSOR)
-//         Serial.print(F("_kalmanAccelY="));
-//         Serial.println(value);
-//   #endif
-//         values.y = value;
-        
-//         value = _kalmanAccelZ.kalmanCalc(values.z);
-//   #if defined(DEBUG_SENSOR)
-//         Serial.print(F("_kalmanAccelZ="));
-//         Serial.println(value);
-//   #endif
-//         values.z = value;
-// #endif
-
 #if defined(DEBUG_SENSOR)
   debug(F("accelerometer.x"), values.x);
   debug(F("accelerometer.y"), values.y);
@@ -71,7 +56,7 @@ accelerometerValues sensorMPU6050::readAccelerometer(bool update) {
     return values;
 }
 
-gyroscopeValues sensorMPU6050::readGyroscope(bool update) {
+gyroscopeValues sensorMPU6050::readGyroscopeI(bool update) {
   gyroscopeValues values;
 
   GyroData imuGyro;
@@ -83,29 +68,6 @@ gyroscopeValues sensorMPU6050::readGyroscope(bool update) {
   values.y = (float)imuGyro.gyroY;
   values.z = (float)imuGyro.gyroZ;
 
-// #if defined(KALMAN) && defined(KALMAN_ACCEL)
-//         float value = _kalmanGyroX.kalmanCalc(values.x);
-//   #if defined(DEBUG_SENSOR)
-//         Serial.print(F("_kalmanGyroX="));
-//         Serial.println(value);
-//   #endif
-//         values.x = value;
-
-//         value = _kalmanGyroY.kalmanCalc(values.y);
-//   #if defined(DEBUG_SENSOR)
-//         Serial.print(F("_kalmanGyroY="));
-//         Serial.println(value);
-//   #endif
-//         values.y = value;
-        
-//         value = _kalmanGyroZ.kalmanCalc(values.z);
-//   #if defined(DEBUG_SENSOR)
-//         Serial.print(F("_kalmanGyroZ="));
-//         Serial.println(value);
-//   #endif
-//         values.z = value;
-// #endif
-
 #if defined(DEBUG_SENSOR)
   debug(F("gyro.x"), values.x);
   debug(F("gyro.y"), values.y);
@@ -113,31 +75,6 @@ gyroscopeValues sensorMPU6050::readGyroscope(bool update) {
 #endif
 
     return values;
-}
-
-// magnetometerValues sensorMPU6050::readMagnetometer() {
-//   magnetometerValues values;
-
-//   values.x = 0.0;
-//   values.y = 0.0;
-//   values.z = 0.0;
-
-// #if defined(DEBUG_SENSOR)
-//   debug(F("magnetometer.x"), values.x);
-//   debug(F("magnetometer.y"), values.y);
-//   debug(F("magnetometer.z"), values.z);
-// #endif
-
-//     return values;
-// }
-
-void sensorMPU6050::sleep() {
-  Serial.println(F("\tSleep sensor IMU..."));
-  
-  // _qmi.disableGyroscope();
-  // _qmi.disableAccelerometer();
-
-  Serial.println(F("\t...sensor IMU sleep successful."));
 }
 
 int8_t sensorMPU6050::setup(uint8_t calibrationId, uint8_t calibrationStatusId) {
@@ -238,20 +175,4 @@ void sensorMPU6050::calibrationDisplay(calData calibrationData, const char* offs
     Serial.print(F(", "));
     Serial.println(calibrationData.magScale[2]);
   }
-}
-
-void sensorMPU6050::calibrationResetCommand() {
-  Serial.println(F("\tSetup sensor IMU calibrating..."));
-  
-  setupCalibration();
-
-  calibrationDisplay(_calibrationData, "");
-
-  int err = _imu.init(_calibrationData, IMU_ADDRESS);
-  if (err != 0) {
-    Serial.print(F("...sensor IMU error: "));
-    Serial.println(err);
-  }
-
-  Serial.println(F("\t...sensor IMU calibrated successful."));
 }
