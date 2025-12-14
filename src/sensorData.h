@@ -75,8 +75,11 @@ struct __attribute__((packed)) gyroscopeValues {
 struct __attribute__((packed)) imuValues {
   float roll;
   float pitch;
+  float roll1;
+  float pitch1;
   float yaw;
   bool vertical;
+  bool verticalByTolerance;
 };
 
 struct __attribute__((packed)) magnetometerValues {

@@ -12,7 +12,7 @@ int8_t sensorBase::initOverride(SensorOverrideFunctionPtr funcOverride) {
   return 0;
 }
 
-int8_t sensorBase::setup(uint8_t calibrationId, uint8_t calibrationStatusId) {
+int8_t sensorBase::setupI(uint8_t calibrationId, uint8_t calibrationStatusId) {
   _calibrationId = calibrationId;
   _calibrationStatusId = calibrationStatusId;
   return 0;

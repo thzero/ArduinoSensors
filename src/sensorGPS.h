@@ -23,7 +23,7 @@ class sensorGPS {
       // clear();
     }
 
-    virtual int8_t setup(HardwareSerial& port, int baud);
+    virtual int8_t setup(HardwareSerial& wire, int baud);
 
     int32_t altitude() {
       // return _alt / 1000.0;

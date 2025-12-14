@@ -12,7 +12,8 @@ class sensorBME280: public sensorBarometer {
     int8_t setup(uint8_t calibrationId, uint8_t calibrationStatusId) override;
 
   protected:
-    atmosphereValues readAtmosphereI(bool update = true) override;
+    // void readAtmosphereI(atmosphereValues* values, bool update = true) override;
+    void readI(atmosphereValues* values, bool update = true) override;
     
   private:
     BME280_LITE _sensor;

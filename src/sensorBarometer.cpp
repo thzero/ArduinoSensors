@@ -13,9 +13,11 @@ sensorValuesStruct sensorBarometer::initialize() {
   float sumHumidity = 0;
   float sumPressure = 0;
   float sumTemperature = 0;
+
+  atmosphereValues values2;
   for (int i = 0; i < samples; i++) {
     // debug(F("i"), i);
-    atmosphereValues values2 = readAtmosphere();
+    readI(&values2);
     resultAltitude = values2.altitude;
     resultHumidity = values2.humidity;
     resultPressure = values2.pressure;
@@ -61,20 +63,25 @@ sensorValuesStruct sensorBarometer::initialize() {
   return values;
 }
 
-sensorValuesStruct sensorBarometer::read(unsigned long current, unsigned long delta) {
-  sensorValuesStruct values;
-  values.atmosphere = readAtmosphere();
-  values.atmosphere.altitude = readAltitude(values.atmosphere);
-  return values;
+void sensorBarometer::read(sensorValuesStruct* values, unsigned long current, unsigned long delta) {
+  if (values == nullptr)
+    return;
+    
+  readI(&values->atmosphere);
+  readAltitude(&values->atmosphere);
 }
 
 float sensorBarometer::readAltitude() {
-  atmosphereValues values = readAtmosphere();
-  return readAltitude(values);
+  atmosphereValues values;
+  readI(&values);
+  return readAltitude(&values);
 }
 
-float sensorBarometer::readAltitude(atmosphereValues values) {
-  float altitude = 44330.0f * (1.0f - powf(values.pressure / pressureReference, 0.1903f));
+float sensorBarometer::readAltitude(atmosphereValues* values) {
+  if (values == nullptr)
+    return 0;
+
+  float altitude = 44330.0f * (1.0f - powf(values->pressure / pressureReference, 0.1903f));
 
 //  float altitude = _previousAltitude; 
 // #if defined(DEBUG_SENSOR)
@@ -87,7 +94,7 @@ float sensorBarometer::readAltitude(atmosphereValues values) {
   // debug(F("\taltitudeS.valid"), altitudeS.isValid);
   // debug(F("\taltitudeS.data"), altitudeS.data);
 // #endif
-  values.altitude = altitude;
+  values->altitude = altitude;
   // _previousAltitude = altitude;
 
 // #if defined(KALMAN) && defined(KALMAN_ALTITUDE)
@@ -131,71 +138,71 @@ float sensorBarometer::readAltitude(atmosphereValues values) {
 //   values.altitude = altitudeK;
 // #endif
 
-  return values.altitude;
+  return values->altitude;
 }
 
-atmosphereValues sensorBarometer::readAtmosphere(bool update) {
-  atmosphereValues values = readAtmosphereI( update);
+// atmosphereValues sensorBarometer::readAtmosphere(bool update) {
+//   atmosphereValues values = readAtmosphereI( update);
 
-  // debug("humidity.valid", values.humidity);
-  if (values.humidity > -1) {
-    // debug(F("H"), values.humidity);
+//   // debug("humidity.valid", values.humidity);
+//   if (values.humidity > -1) {
+//     // debug(F("H"), values.humidity);
 
-  #if defined(KALMAN) && defined(KALMAN_HUMIDITY)
-      float humidityK = _kalmanHumidity.kalmanCalc(values.humidity);
-  #if defined(DEBUG_SENSOR)
-      debug(F("_kalmanHumidity"), humidityK.data);
-  #endif
-      values.humidity = humidityK;
-  #endif
-    // debug(F("humidity"), values.humidity);
-  }
+//   #if defined(KALMAN) && defined(KALMAN_HUMIDITY)
+//       float humidityK = _kalmanHumidity.kalmanCalc(values.humidity);
+//   #if defined(DEBUG_SENSOR)
+//       debug(F("_kalmanHumidity"), humidityK.data);
+//   #endif
+//       values.humidity = humidityK;
+//   #endif
+//     // debug(F("humidity"), values.humidity);
+//   }
 
-  // debug("pressureData.valid", values.pressure);
-  if (values.pressure) {
-    // debug(F("P"), values.pressure);
-    values.altitude = 44330.0f * (1.0f - powf(values.pressure / pressureReference, 0.1903f));
+//   // debug("pressureData.valid", values.pressure);
+//   if (values.pressure) {
+//     // debug(F("P"), values.pressure);
+//     values.altitude = 44330.0f * (1.0f - powf(values.pressure / pressureReference, 0.1903f));
 
-#if defined(KALMAN) && defined(KALMAN_PRESSURE)
-  float pressureK = _kalmanPressure.kalmanCalc(pressure);
-#if defined(DEBUG_SENSOR)
-    debug("_kalmanPressure", pressureK);
-#endif
-    values.pressure = pressureK;
-    values.altitude = 44330.0f * (1.0f - powf(pressureK / pressureReference, 0.1903f))
-#endif
-    // debug(F("pressure"), values.pressure);
-  }
+// #if defined(KALMAN) && defined(KALMAN_PRESSURE)
+//   float pressureK = _kalmanPressure.kalmanCalc(pressure);
+// #if defined(DEBUG_SENSOR)
+//     debug("_kalmanPressure", pressureK);
+// #endif
+//     values.pressure = pressureK;
+//     values.altitude = 44330.0f * (1.0f - powf(pressureK / pressureReference, 0.1903f))
+// #endif
+//     // debug(F("pressure"), values.pressure);
+//   }
 
-  // debug("temperatureData.valid", values.temperature);
-  if (values.temperature > -1) {
-    // debug(F("T"), values.temperature);
+//   // debug("temperatureData.valid", values.temperature);
+//   if (values.temperature > -1) {
+//     // debug(F("T"), values.temperature);
 
-#if defined(KALMAN) && defined(KALMAN_TEMPERATURE)
-    float temperatureK = _kalmanTemperature.kalmanCalc(values.temperature);
-#if defined(DEBUG_SENSOR)
-    debug("_kalmanTemperature", temperatureK);
-#endif
-  values.temperature = temperatureK;
-#endif
-    // debug(F("temperature"), values.temperature);
-  }
+// #if defined(KALMAN) && defined(KALMAN_TEMPERATURE)
+//     float temperatureK = _kalmanTemperature.kalmanCalc(values.temperature);
+// #if defined(DEBUG_SENSOR)
+//     debug("_kalmanTemperature", temperatureK);
+// #endif
+//   values.temperature = temperatureK;
+// #endif
+//     // debug(F("temperature"), values.temperature);
+//   }
 
-#if defined(DEBUG_SENSOR)
-  Serial.print(F("humidity="));
-  Serial.print(humidity);
-  Serial.print(F("\tpressure="));
-  Serial.print(pressure);
-  Serial.print(F("\ttemperature="));
-  Serial.println(temperature);
-  Serial.print(F("pressure (reference)="));
-  Serial.print(pressureReference);
-  Serial.print(F("\taltitude="));
-  Serial.println(altitude);
-#endif
+// #if defined(DEBUG_SENSOR)
+//   Serial.print(F("humidity="));
+//   Serial.print(humidity);
+//   Serial.print(F("\tpressure="));
+//   Serial.print(pressure);
+//   Serial.print(F("\ttemperature="));
+//   Serial.println(temperature);
+//   Serial.print(F("pressure (reference)="));
+//   Serial.print(pressureReference);
+//   Serial.print(F("\taltitude="));
+//   Serial.println(altitude);
+// #endif
 
-  return values;
-}
+//   return values;
+// }
 
 void sensorBarometer::sleep() {
   Serial.println(F("\tSleep sensor atmosphere..."));

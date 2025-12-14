@@ -8,46 +8,45 @@
 sensorBME280::sensorBME280() {
 }
 
-atmosphereValues sensorBME280::readAtmosphereI(bool update) {
-  atmosphereValues values;
+void sensorBME280::readI(atmosphereValues* values, bool update) {
+  if (values == nullptr)
+    return;
 
-  values.humidity = -1;
+  values->humidity = -1;
   BME_SensorData humidityData = _sensor.readHumidity(BME_ADDR);
   // debug("humidityData.valid", humidityData.isValid);
   if (humidityData.isValid) {
     // debug(F("H"), humidityData.data);
-    values.humidity = humidityData.data;
+    values->humidity = humidityData.data;
   }
 
-  values.pressure = -1;
+  values->pressure = -1;
   BME_SensorData pressureData = _sensor.readPressure(BME_ADDR);
   // debug("pressureData.valid", pressureData.isValid);
   if (pressureData.isValid) {
     // debug(F("P"), pressureData.data);
-    values.pressure = pressureData.data;
+    values->pressure = pressureData.data;
   }
 
-  values.temperature = -1;
+  values->temperature = -1;
   BME_SensorData temperatureData = _sensor.readTemperature(BME_ADDR);
   // debug("temperatureData.valid", temperatureData.isValid);
   if (temperatureData.isValid) {
     // debug(F("T"), temperatureData.data);
-    values.temperature = temperatureData.data;
+    values->temperature = temperatureData.data;
   }
 
 #if defined(DEBUG_SENSOR)
-  debug(F("humidity"), values.humidity);
-  debug(F("pressure"), values.pressure);
-  debug(F("temperature"), values.temperature);
+  debug(F("humidity"), values->humidity);
+  debug(F("pressure"), values->pressure);
+  debug(F("temperature"), values->temperature);
 #endif
-
-  return values;
 }
 
 int8_t sensorBME280::setup(uint8_t calibrationId, uint8_t calibrationStatusId) {
   Serial.println(F("\tSetup sensor atmosphere..."));
 
-  sensorBase::setup(calibrationId, calibrationStatusId);
+  setupI(calibrationId, calibrationStatusId);
 
   bool results = _sensor.begin(BME_ADDR, // returns a T/F based on initialization.
             BME_H_X1, // All settings can be found in the docs.

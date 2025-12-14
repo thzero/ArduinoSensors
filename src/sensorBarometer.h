@@ -14,14 +14,16 @@
 class sensorBarometer: public sensorBase {
   public:
     sensorValuesStruct initialize() override;
-    sensorValuesStruct read(unsigned long current, unsigned long delta) override;
+    void read(sensorValuesStruct* values, unsigned long current, unsigned long delta) override;
     virtual float readAltitude();
-    virtual float readAltitude(atmosphereValues values);
-    virtual atmosphereValues readAtmosphere(bool update = true);
+    virtual float readAltitude(atmosphereValues* values);
+    // virtual atmosphereValues readAtmosphere(bool update = true);
+    virtual int8_t setup(uint8_t calibrationId, uint8_t calibrationStatusId);
     void sleep() override;
 
   protected:
-    virtual atmosphereValues readAtmosphereI(bool update = true);
+    // virtual atmosphereValues readAtmosphereI(bool update = true);
+    virtual void readI(atmosphereValues* values, bool update = true);
 
   private:
     // float _previousAltitude = 0;
