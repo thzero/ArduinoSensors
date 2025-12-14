@@ -42,10 +42,10 @@ Madgwick::Madgwick() {
 	q1 = 0.0f;
 	q2 = 0.0f;
 	q3 = 0.0f;
-	now = micros();
+	// now = micros();
 }
 
-void Madgwick::update(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz) {
+void Madgwick::update(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz, unsigned long current, unsigned long delta) {
 	float recipNorm;
 	float s0, s1, s2, s3;
 	float qDot1, qDot2, qDot3, qDot4;
@@ -54,14 +54,19 @@ void Madgwick::update(float gx, float gy, float gz, float ax, float ay, float az
 
 	// Use IMU algorithm if magnetometer measurement invalid (avoids NaN in magnetometer normalisation)
 	if((mx == 0.0f) && (my == 0.0f) && (mz == 0.0f)) {
-		updateIMU(gx, gy, gz, ax, ay, az);
+		updateIMU(gx, gy, gz, ax, ay, az, current, delta);
 		return;
 	}
 	
-	now = micros();
-	// Set integration time by time elapsed since last filter update
-	delta_t = ((now - last_update) / (float)1000000.0f);
-	last_update = now;
+	// now = micros();
+	// // Set integration time by time elapsed since last filter update
+	// delta_t = ((now - last_update) / (float)1000000.0f);
+	// last_update = now;
+
+	last_update = current;
+	Serial.print(F("Madgwick::update.delta="));
+	Serial.println(delta);
+	last_update = current;
 
 	// Convert gyroscope degrees/sec to radians/sec
 	gx *= (float)0.0174533f;
@@ -138,10 +143,14 @@ void Madgwick::update(float gx, float gy, float gz, float ax, float ay, float az
 	}
 
 	// Integrate rate of change of quaternion to yield quaternion
-	q0 += qDot1 * delta_t;
-	q1 += qDot2 * delta_t;
-	q2 += qDot3 * delta_t;
-	q3 += qDot4 * delta_t;
+	// q0 += qDot1 * delta_t;
+	// q1 += qDot2 * delta_t;
+	// q2 += qDot3 * delta_t;
+	// q3 += qDot4 * delta_t;
+	q0 += qDot1 * delta;
+	q1 += qDot2 * delta;
+	q2 += qDot3 * delta;
+	q3 += qDot4 * delta;
 
 	// Normalise quaternion
 	recipNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
@@ -154,28 +163,82 @@ void Madgwick::update(float gx, float gy, float gz, float ax, float ay, float az
 //-------------------------------------------------------------------------------------------
 // IMU algorithm update
 
-void Madgwick::updateIMU(float gx, float gy, float gz, float ax, float ay, float az) {
+void Madgwick::updateIMU(float gx, float gy, float gz, float ax, float ay, float az, unsigned long current, unsigned long delta) {
 	float recipNorm;
-	float s0, s1, s2, s3;
-	float qDot1, qDot2, qDot3, qDot4;
-	float _2q0, _2q1, _2q2, _2q3, _4q0, _4q1, _4q2 ,_8q1, _8q2, q0q0, q1q1, q2q2, q3q3;
+	
+  	// Serial.printf(F("Madgwick::updateIMU.gx=%.5f gy=%.5f gz=%.5f\n"), gx, gy, gz);
+    // Serial.print(F("Madgwick::updateIMU.gx="));
+    // Serial.print(gx, 8);
+    // Serial.print(F(" gy="));
+    // Serial.print(gy, 8);
+    // Serial.print(F(" gz="));
+    // Serial.println(gz, 8);
 
 	// Convert gyroscope degrees/sec to radians/sec
-	gx *= (float)0.0174533f;
-	gy *= (float)0.0174533f;
-	gz *= (float)0.0174533f;
+	// float gx2 = gx * 0.0174533;
+	// float gy2 = gy * 0.0174533;
+	// float gz2 = gz * 0.0174533;
+	gx *= 0.0174533;
+	gy *= 0.0174533;
+	gz *= 0.0174533;
 	
-	now = micros();
-	// Set integration time by time elapsed since last filter update
-	delta_t = ((now - last_update) / (float)1000000.0f);
-	last_update = now;
+  	// Serial.printf(F("Madgwick::updateIMU.gx=%.5f gy=%.5f gz=%.5f\n"), gx2, gy2, gz2);
+    // Serial.print(F("Madgwick::updateIMU.gx2="));
+    // Serial.print(gx2, 8);
+    // Serial.print(F(" gy2="));
+    // Serial.print(gy2, 8);
+    // Serial.print(F(" gz="));
+    // Serial.println(gz2, 8);
+    // Serial.print(F("Madgwick::updateIMU.gx="));
+    // Serial.print(gx, 8);
+    // Serial.print(F(" gy="));
+    // Serial.print(gy, 8);
+    // Serial.print(F(" gz="));
+    // Serial.println(gz, 8);
+	
+	// now = micros();
+	// // Set integration time by time elapsed since last filter update
+	// delta_t = ((now - last_update) / (float)1000000.0f);
+	// last_update = now;
+	
+	// Serial.print(F("Madgwick::updateIMU.delta_t="));
+	// Serial.println(delta_t);
+
+	last_update = current;
+	// Serial.print(F("Madgwick::updateIMU.delta="));
+	// Serial.println(delta);
+	last_update = current;
 
 	// Rate of change of quaternion from gyroscope
-	qDot1 = (float)0.5f * (-q1 * gx - q2 * gy - q3 * gz);
-	qDot2 = (float)0.5f * (q0 * gx + q2 * gz - q3 * gy);
-	qDot3 = (float)0.5f * (q0 * gy - q1 * gz + q3 * gx);
-	qDot4 = (float)0.5f * (q0 * gz + q1 * gy - q2 * gx);
+	// float qDot1 = 0.5f * (-q1 * gx2 - q2 * gy2 - q3 * gz2);
+	// float qDot2 = 0.5f * (q0 * gx2 + q2 * gz2 - q3 * gy2);
+	// float qDot3 = 0.5f * (q0 * gy2 - q1 * gz2 + q3 * gx2);
+	// float qDot4 = 0.5f * (q0 * gz2 + q1 * gy2 - q2 * gx2);
+	float qDot1 = 0.5f * (-q1 * gx - q2 * gy - q3 * gz);
+	float qDot2 = 0.5f * (q0 * gx + q2 * gz - q3 * gy);
+	float qDot3 = 0.5f * (q0 * gy - q1 * gz + q3 * gx);
+	float qDot4 = 0.5f * (q0 * gz + q1 * gy - q2 * gx);
 
+	// Serial.printf(F("Madgwick::updateIMU.qDot1=%.5f qDot2=%.5f qDot3=%.5f qDot4=%.5f\n"), qDot1, qDot2, qDot3, qDot4);
+    // Serial.print(F("Madgwick::updateIMU.qDot1="));
+    // Serial.print(qDot1, 8);
+    // Serial.print(F(" qDot2="));
+    // Serial.print(qDot2, 8);
+    // Serial.print(F(" qDot3="));
+    // Serial.print(qDot3, 8);
+    // Serial.print(F(" qDot4="));
+    // Serial.println(qDot4, 8);
+		
+	// Serial.printf(F("Madgwick::updateIMU.ax=%.5f gy=%.5f az=%.5f\n"), ax, ay, az);
+    // Serial.print(F("Madgwick::updateIMU.ax="));
+    // Serial.print(ax, 8);
+    // Serial.print(F(" ay="));
+    // Serial.print(ay, 8);
+    // Serial.print(F(" az="));
+    // Serial.println(az, 8);
+
+	float s0, s1, s2, s3;
+	float _2q0, _2q1, _2q2, _2q3, _4q0, _4q1, _4q2 ,_8q1, _8q2, q0q0, q1q1, q2q2, q3q3;
 	// Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
 	if(!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f))) {
 
@@ -219,17 +282,58 @@ void Madgwick::updateIMU(float gx, float gy, float gz, float ax, float ay, float
 	}
 
 	// Integrate rate of change of quaternion to yield quaternion
-	q0 += qDot1 * delta_t;
-	q1 += qDot2 * delta_t;
-	q2 += qDot3 * delta_t;
-	q3 += qDot4 * delta_t;
+	// q0 += qDot1 * delta_t;
+	// q1 += qDot2 * delta_t;
+	// q2 += qDot3 * delta_t;
+	// q3 += qDot4 * delta_t;
+	q0 += qDot1 * delta;
+	q1 += qDot2 * delta;
+	q2 += qDot3 * delta;
+	q3 += qDot4 * delta;
+
+  	// Serial.printf(F("Madgwick::updateIMU.q0=%.5f q1=%.5f q2=%.5f q3=%.5f\n"), q0, q1, q2, q3);
+    // Serial.print(F("Madgwick::updateIMU.q0="));
+    // Serial.print(q0, 8);
+    // Serial.print(F(" q1="));
+    // Serial.print(q1, 8);
+    // Serial.print(F(" q2="));
+    // Serial.print(q2, 8);
+    // Serial.print(F(" q3="));
+    // Serial.println(q3, 8);
 
 	// Normalise quaternion
 	recipNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-	q0 *= recipNorm;
-	q1 *= recipNorm;
-	q2 *= recipNorm;
-	q3 *= recipNorm;
+
+	// Serial.print(F("Madgwick::updateIMU.recipNorm="));
+	// Serial.println(recipNorm);
+
+	float q0a = q0 * recipNorm;
+	float q1a = q1 * recipNorm;
+	float q2a = q2 * recipNorm;
+	float q3a = q3 * recipNorm;
+
+  	// Serial.printf(F("Madgwick::updateIMU.q0=%.5f q1=%.5f q2=%.5f q3=%.5f\n"), q0, q1, q2, q3);
+    // Serial.print(F("Madgwick::updateIMU.q0a="));
+    // Serial.print(q0a, 8);
+    // Serial.print(F(":"));
+    // Serial.print(q0, 8);
+    // Serial.print(F(" q1a="));
+    // Serial.print(q1a, 8);
+    // Serial.print(F(":"));
+    // Serial.print(q1, 8);
+    // Serial.print(F(" q2a="));
+    // Serial.print(q2a, 8);
+    // Serial.print(F(":"));
+    // Serial.print(q2, 8);
+    // Serial.print(F(" q3a="));
+    // Serial.print(q3a, 8);
+    // Serial.print(F(":"));
+    // Serial.println(q3, 8);
+
+	q0 = q0a;
+	q1 = q1a;
+	q2 = q2a;
+	q3 = q3a;
 }
 
 //-------------------------------------------------------------------------------------------

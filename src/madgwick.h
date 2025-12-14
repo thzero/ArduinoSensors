@@ -25,8 +25,9 @@ class Madgwick {
     Madgwick(void);
     void changeBeta(float newBeta) { beta = newBeta; }
     void begin(float confBeta) { beta = confBeta; }
-    void update(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
-    void updateIMU(float gx, float gy, float gz, float ax, float ay, float az);
+    void getEulerAngles();
+    void update(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz, unsigned long current, unsigned long delta);
+    void updateIMU(float gx, float gy, float gz, float ax, float ay, float az, unsigned long current, unsigned long delta);
 
     float getQuatW() {
       return q0;
@@ -58,9 +59,8 @@ class Madgwick {
 
   private:
     static float invSqrt(float x);
-    void getEulerAngles();
 
-    float delta_t = 0; // Used to control display output rate
+    // float delta_t = 0; // Used to control display output rate
     uint32_t now = 0;        // used to calculate integration interval
     uint32_t last_update = 0; // used to calculate integration interval
     float beta;				// algorithm gain
